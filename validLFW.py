@@ -30,7 +30,7 @@ elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_5_rocNMD0.715_rocMasked0.629maskV1.pt'
+model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_7_rocNMD0.753_rocMasked0.626maskV1.pt'
 if os.path.exists(model_path) and (version in model_path):
     model_state = torch.load(model_path)
     model.load_state_dict(model_state['model_state_dict'])
