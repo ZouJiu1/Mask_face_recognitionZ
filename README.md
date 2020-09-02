@@ -35,6 +35,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 <br>
 数据清单生成，先把所有数据文件信息存到csv文件里以后就不用每次都读了：   <br>
 使用Data_preprocessing/Make_csv_file_notmask.py，输入数据文件夹路径、输出csv文件路径，然后就能跑了，保存的csv格式形如：序号，图片名称，人名<br>
+
 ###### 生成结果展示
 <img src="Datasets/vggface2_train_face_notmask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_notmask/n009261/0001_01.jpg" width="39%" />
 <i></i>

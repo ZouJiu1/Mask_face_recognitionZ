@@ -37,7 +37,7 @@ elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, num_classes=128)
 
 model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_5_rocNMD0.842_rocMasked0.655notmaskV3.pt'
-if os.path.exists(model_path):
+if os.path.exists(model_path) and ('V3' in model_path):
     model_state = torch.load(model_path)
     model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
