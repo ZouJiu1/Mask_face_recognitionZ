@@ -70,7 +70,7 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 不戴口罩V3运行: python train_notmaskV3.py
 ```
 ### 训练以后验证模型效果
-验证测试过程中会采用戴口罩的LFW数据和不戴口罩的LFW数据，会打印输出相应的AUC结果，其中evaluate_lfw函数中的参数pltshow，用来控制是否保存ROC曲线图
+验证测试过程中会采用戴口罩的LFW数据和不戴口罩的LFW数据，会打印输出相应的AUC结果，其中evaluate_lfw函数中的参数pltshow，用来控制是否保存ROC曲线图,ROC曲线图保存在ROC_images文件夹里面<br>
 模型是保存在Model_training_checkpoints文件夹里面，日志文件保存在logs文件夹里面
 
 ### ROC_AUC曲线图
@@ -79,25 +79,39 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 <img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.842_V3.png" width="90%" /></center>
 <i></i>
 
-
-### 两张图片对比向量距离
+### 两张图片对比向量距离以及特征图可视化
+保存的特征图在Layer_show文件夹里面，保存的是img2_path这张图片的特征图，version控制网络版本V1、V2和V3，mask控制人脸是否戴口罩，<br>
+戴口罩的特征图保存在Layer_show/mask里面，不戴口罩的特征图保存在Layer_show/notmask里面<br>
+dis2.972_faceshow_V3.jpg代表欧氏距离是2.972，V3代表使用的是V3版网络和模型，图中右边的是img2_path对应的图片<br>
+fpnP3_V1.jpg代表V1网络模型中的fpn层中的P3层的特征图可视化，例外的是V3.jpg，因为V3网络没有FPN层，所以只有最后一层的可视化图片
 ```bash
-cd valid_test_compare
 python compare.py
 ```
+### 特征图可视化结果
+这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的图片 
+<img src="Layer_show/mask/dis0.860_faceshow_V1.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.860_faceshow_V1.jpg" width="39%" /><br>
+戴口罩测试图片的V2_P5和V2_P6的结果，可见网络的注意力放在了口罩以外的人脸区域
+<img src="Layer_show/mask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
+戴口罩测试图片的V3最后一层特征图可视化结果，即使网络加入了face_attention模块，但是输入的图片没有戴上口罩，导致网络的注意力没有集中在口罩以外的区域
+<img src="Layer_show/mask/V3.jpg" width="80%" />
+<i></i>
+
+不戴口罩测试图片的V2_P5和V2_P6的结果，可见网络的注意力放在了口罩以外的人脸区域
+<img src="Layer_show/notmask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
+不戴口罩测试图片的V3最后一层特征图可视化结果，网络的注意力没有集中在口罩以外的区域
+<img src="Layer_show/notmask/V3.jpg" width="80%" />
+<i></i>
+
 ### 使用LFW验证测试集AUC结果
 ```bash
-cd valid_test_compare
 python validLFW.py
 ```
 ### 非LFW数据集生成LFW格式的pairs.txt文件
 ```bash
-cd valid_test_compare
 python create_pairs.py
 ```
 ### 使用非LFW数据集验证测试集AUC结果
 ```bash
-cd valid_test_compare
 python validNOTLFW.py
 ```
 

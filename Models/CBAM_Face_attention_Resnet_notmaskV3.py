@@ -3,7 +3,12 @@ import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
 from Losses.Mask_bce_loss import Attention_loss
-
+import numpy as np
+from Losses.Mask_bce_loss import UnNormalizer
+import matplotlib.pyplot as plt
+import os
+unnormalize = UnNormalizer()
+pwd = os.path.abspath(__file__+'../../../')
 
 __all__ = ['ResNet', 'resnet18_cbam', 'resnet34_cbam', 'resnet50_cbam', 'resnet101_cbam',
            'resnet152_cbam']
@@ -173,8 +178,9 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, num_classes=128):
+    def __init__(self, block, layers, showlayer= False, num_classes=128):
         self.inplanes = 64
+        self.showlayer = showlayer
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
@@ -233,6 +239,14 @@ class ResNet(nn.Module):
         if self.training:
             loss = self.aloss(xs, mask)
         x = x * torch.exp(xs)
+        if self.showlayer:
+            i = 0
+            for level in [x]:
+                i += 1
+                level = level.squeeze(0)
+                level = np.array(255 * unnormalize(level).detach().numpy()).copy()
+                level = np.transpose(level, (1, 2, 0))
+                plt.imsave(os.path.join(pwd, 'Layer_show', 'V3'+ '.jpg'), level[:,:,0])
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         # print(11111111111, x.size())

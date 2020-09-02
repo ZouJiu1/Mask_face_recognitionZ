@@ -2,7 +2,7 @@ import numpy as np
 import os
 import itertools
 
-pwd = os.path.join(os.path.abspath('../'), 'Datasets')
+pwd = os.path.join(os.path.abspath('/'), 'Datasets')
 
 def samechoice(lists, path, allsame, f, num):
     length = len(lists)

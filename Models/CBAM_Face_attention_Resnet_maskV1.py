@@ -11,6 +11,11 @@ import cv2
 import torch.nn.functional as F
 from config_mask import config
 
+from Losses.Mask_bce_loss import UnNormalizer
+import matplotlib.pyplot as plt
+unnormalize = UnNormalizer()
+pwd = os.path.abspath(__file__+'../../../')
+
 sys.path.append(os.getcwd())
 
 __all__ = ['ResNet', 'resnet18_cbam', 'resnet34_cbam', 'resnet50_cbam', 'resnet101_cbam',
@@ -360,8 +365,9 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, num_classes=128):
+    def __init__(self, block, layers, showlayer= False,  num_classes=128):
         self.inplanes = 64
+        self.showlayer = showlayer
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
@@ -440,13 +446,14 @@ class ResNet(nn.Module):
         # print(masks[masks==1])
         attention = [self.levelattentionModel(feature) for feature in features]
 
-        # i = 1
-        # for level in attention:
-        #     i += 1
-        #     level = level.squeeze(0)
-        #     level = np.array(255 * unnormalize(level)).copy()
-        #     level = np.transpose(level, (1, 2, 0))
-        #     plt.imsave(os.path.join('./output', str(i) + '.jpg'), level[:,:,0])
+        if self.showlayer:
+            i = 0
+            for level in attention:
+                i += 1
+                level = level.squeeze(0)
+                level = np.array(255 * unnormalize(level).detach().numpy()).copy()
+                level = np.transpose(level, (1, 2, 0))
+                plt.imsave(os.path.join(pwd, 'Layer_show', 'fpnP%s'%(8-i)+'_V1'+ '.jpg'), level[:, :, 0])
 
         features = [features[i] * torch.exp(attention[i]) for i in range(len(features))]
 

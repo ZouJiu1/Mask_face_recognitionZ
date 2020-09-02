@@ -1,6 +1,14 @@
 import torch
-from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
-    resnet152_cbam
+version = 'V1'
+if version=='V1':
+    from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
+        resnet152_cbam
+elif version=='V2':
+    from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
+        resnet152_cbam
+elif version=='V3':
+    from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
+        resnet152_cbam
 import numpy as np
 import tqdm
 from config_mask import config
@@ -9,15 +17,15 @@ from torch.nn.modules.distance import PairwiseDistance
 from Data_loader.Data_loader_facenet_mask import NOTLFWestMask_dataloader
 
 if config['model'] == 18:
-    model = resnet18_cbam(pretrained=True, num_classes=128)
+    model = resnet18_cbam(pretrained=True, showlayer= False,num_classes=128)
 elif config['model'] == 34:
-    model = resnet34_cbam(pretrained=True, num_classes=128)
+    model = resnet34_cbam(pretrained=True, showlayer= False, num_classes=128)
 elif config['model'] == 50:
-    model = resnet50_cbam(pretrained=True, num_classes=128)
+    model = resnet50_cbam(pretrained=True, showlayer= False, num_classes=128)
 elif config['model'] == 101:
-    model = resnet101_cbam(pretrained=True, num_classes=128)
+    model = resnet101_cbam(pretrained=True, showlayer= False, num_classes=128)
 elif config['model'] == 152:
-    model = resnet152_cbam(pretrained=True, num_classes=128)
+    model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_path = r'/home/Mask-face-recognitionV1/Model_training_checkpoints/model_resnet34_attention_triplet_epoch_2_roc0.6185.pt'
 model.load_state_dict(torch.load(model_path)['model_state_dict'])
@@ -50,8 +58,7 @@ with torch.no_grad(): # 不传梯度了
     )
 
 # 打印日志内容
-print('Epoch {}:\n \
-           test_log:\tAUC: {:.4f}\tACC: {:.4f}+-{:.4f}\trecall: {:.4f}+-{:.4f}\tPrecision {:.4f}+-{:.4f}\t'.format(
+print('test_log:\tAUC: {:.4f}\tACC: {:.4f}+-{:.4f}\trecall: {:.4f}+-{:.4f}\tPrecision {:.4f}+-{:.4f}\t'.format(
     roc_auc,
     np.mean(accuracy),
     np.std(accuracy),

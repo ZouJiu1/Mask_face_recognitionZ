@@ -20,8 +20,8 @@ config['Learning_rate'] = 0.00001
 config['image_size'] = 256        # inceptionresnetv2————299
 config['epochs'] = 1900
 
-config['train_batch_size'] = 39#130
-config['test_batch_size'] = 39
+config['train_batch_size'] = 36#130
+config['test_batch_size'] = 36
 
 config['margin'] = 0.5
 config['embedding_dim'] = 128

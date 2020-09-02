@@ -26,15 +26,15 @@ print("Using {} model architecture.".format(config['model']))
 start_epoch = 0
 
 if config['model'] == 18:
-    model = resnet18_cbam(pretrained=True, num_classes=128)
+    model = resnet18_cbam(pretrained=True, showlayer= False,num_classes=128)
 elif config['model'] == 34:
-    model = resnet34_cbam(pretrained=True, num_classes=128)
+    model = resnet34_cbam(pretrained=True, showlayer= False, num_classes=128)
 elif config['model'] == 50:
-    model = resnet50_cbam(pretrained=True, num_classes=128)
+    model = resnet50_cbam(pretrained=True, showlayer= False, num_classes=128)
 elif config['model'] == 101:
-    model = resnet101_cbam(pretrained=True, num_classes=128)
+    model = resnet101_cbam(pretrained=True, showlayer= False, num_classes=128)
 elif config['model'] == 152:
-    model = resnet152_cbam(pretrained=True, num_classes=128)
+    model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
     # model  = resnet18(100)
 
 model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_7_rocNMD0.802_rocMasked0.617maskV2.pt'
