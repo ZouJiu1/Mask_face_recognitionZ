@@ -27,7 +27,7 @@ def pltimshow(fpr, tpr, roc_auc, epoch, tag, version):
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('ROC_%sepoch_%s_%s'%(epoch, tag+str('%.3f' % roc_auc), version))
+    plt.title('ROC_%s_%s_%s'%(epoch, tag+str('%.3f' % roc_auc), version))
     plt.legend(loc="lower right")
     plt.savefig(os.path.join(pwd, 'ROC_images', 'ROC_%s_%s_%s.png'%(epoch, tag+str('%.3f' % roc_auc), version)))
     # plt.show()

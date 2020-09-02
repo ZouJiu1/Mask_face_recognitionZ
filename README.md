@@ -70,7 +70,13 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 ### 训练以后验证模型效果
 验证测试过程中会采用戴口罩的LFW数据和不戴口罩的LFW数据，会打印输出相应的AUC结果，其中evaluate_lfw函数中的参数pltshow，用来控制是否保存ROC曲线图
 模型是保存在Model_training_checkpoints文件夹里面，日志文件保存在logs文件夹里面
-<br>
+
+### ROC_AUC曲线图
+<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.715_V1.png" width="90%" /></center>
+<img src="ROC_images/ROC_epoch%253A6_NOTMaskedLFW_aucnotmask0.802_V2.png" width="90%" /></center>
+<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.842_V3.png" width="90%" /></center>
+<i></i>
+
 
 ### 两张图片对比向量距离
 ```bash
