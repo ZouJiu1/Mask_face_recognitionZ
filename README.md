@@ -1,13 +1,13 @@
 # 口罩人脸识别(Mask-face-recognition)
 ##### 原始github:https://github.com/HouchangX-AI/Mask-face-recognition
 ### 由来
-这个项目主要是实现人脸特征向量的提取，关注点是实现CBAM以及face_attention，让网络集中关注不戴口罩的人脸区域
+这个项目主要是实现人脸特征向量的提取，关注点是实现[CBAM](https://arxiv.org/abs/1807.06521) 模块以及[face_attention](https://arxiv.org/abs/1711.07246) 模块，让网络集中关注不戴口罩的人脸区域并提升识别率
 ### 数据
 正常人脸训练数据：VGGFace2，链接：http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/ <br>
 正常人脸测试数据：LFW(Labeled Faces in the Wild)，链接：http://vis-www.cs.umass.edu/lfw/ <br> 
 口罩人脸数据：Real-World-Masked-Face-Dataset，链接：https://github.com/X-zhangyang/Real-World-Masked-Face-Dataset <br>   
 ### 模型
-以标准人脸识别模型FaceNet为主线，添加Attention结构，增加CBAM模型，使其能更好的聚焦于人脸上半部，没带口罩的区域<br>
+以标准人脸识别模型[FaceNet](https://arxiv.org/abs/1503.03832) 为主线，添加fpn_face_attention结构，增加CBAM模块，使其能更好的聚焦于人脸上半部，没带口罩的区域<br>
 这里提供了三个版本的模型，一个是戴口罩的模型V1和V2，一个是没带口罩的模型V3，带口罩的模型V1和V2的区别仅在于训练网络不同<br>
 
 ### 下载相应数据
@@ -46,6 +46,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 <br>
 数据清单生成，先把所有数据文件信息存到csv文件里以后就不用每次都读了：   <br>
 使用Data_preprocessing/Make_csv_file_mask.py，输入数据文件夹路径、输出csv文件路径，然后就能跑了，保存的csv格式形：序号，图片名称，人名<br>
+
 ###### 生成结果展示
 <img src="Datasets/vggface2_train_face_mask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_mask/n009261/0001_01.jpg" width="39%" />
 <i></i>
