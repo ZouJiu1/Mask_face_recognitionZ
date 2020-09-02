@@ -74,9 +74,10 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 模型是保存在Model_training_checkpoints文件夹里面，日志文件保存在logs文件夹里面
 
 ### ROC_AUC曲线图
-<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.715_V1.png" width="90%" /></center>
-<img src="ROC_images/ROC_epoch%253A6_NOTMaskedLFW_aucnotmask0.802_V2.png" width="90%" /></center>
-<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.842_V3.png" width="90%" /></center>
+左边的图片是使用不戴口罩的LFW测试图片，右边的图片是使用戴口罩的LFW测试图片
+<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.715_V1.png" width="39%" /></center>
+<img src="ROC_images/ROC_epoch%253A6_NOTMaskedLFW_aucnotmask0.802_V2.png" width="39%" /></center>
+<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.842_V3.png" width="39%" /></center>
 <i></i>
 
 ### 两张图片对比向量距离以及特征图可视化
@@ -88,8 +89,8 @@ fpnP3_V1.jpg代表V1网络模型中的fpn层中的P3层的特征图可视化，�
 python compare.py
 ```
 ### 特征图可视化结果
-这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的图片 
-<img src="Layer_show/mask/dis0.860_faceshow_V1.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.860_faceshow_V1.jpg" width="39%" /><br>
+这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的测试拼接图片<br> 
+<img src="Layer_show/mask/dis0.860_faceshow_V1.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.257_faceshow_V1.jpg" width="39%" /><br>
 戴口罩测试图片的V2_P5和V2_P6的结果，可见网络的注意力放在了口罩以外的人脸区域
 <img src="Layer_show/mask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
 戴口罩测试图片的V3最后一层特征图可视化结果，即使网络加入了face_attention模块，但是输入的图片没有戴上口罩，导致网络的注意力没有集中在口罩以外的区域
