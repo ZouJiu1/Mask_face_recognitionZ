@@ -248,7 +248,7 @@ for epoch in range(start_epoch, end_epoch):
         tar, far = evaluate_lfw(
             distances=distances,
             labels=labels,
-            epoch = 'epoch:'+str(epoch),
+            epoch = 'epoch_'+str(epoch),
             tag = 'NOTMaskedLFW_aucnotmask',
             version = 'V2',
             pltshow=True
@@ -275,7 +275,7 @@ for epoch in range(start_epoch, end_epoch):
         tar_mask, far_mask = evaluate_lfw(
             distances=distances,
             labels=labels,
-            epoch = 'epoch:'+str(epoch),
+            epoch = 'epoch_'+str(epoch),
             tag = 'MaskedLFW_aucmask',
             version = 'V2',
             pltshow=True
