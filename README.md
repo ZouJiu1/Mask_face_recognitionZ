@@ -92,15 +92,15 @@ python compare.py
 ### 特征图可视化结果
 这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的测试拼接图片<br> 
 <img src="Layer_show/mask/dis0.860_faceshow_V1.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.257_faceshow_V1.jpg" width="39%" /><br>
-戴口罩的测试图片通过V2网络FPN层的P5层特征图可视化mask/fpnP5_V2.jpg、以及通过V2网络FPN层的P6层特征图可视化mask/fpnP6_V2.jpg，可见网络的注意力放在了口罩以外的人脸区域
+戴口罩的测试图片通过V2网络FPN层的P5层特征图可视化mask/fpnP5_V2.jpg、以及通过V2网络FPN层的P6层特征图可视化mask/fpnP6_V2.jpg，可见网络的注意力放在了口罩以外的人脸区域<br>
 <img src="Layer_show/mask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
-戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg，V3网络加入了face_attention模块，但是输入的图片没有戴上口罩 网络的注意力没有集中在口罩以外的区域
+戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg，V3网络加入了face_attention模块，但是输入的图片没有戴上口罩 网络的注意力没有集中在口罩以外的区域<br>
 <img src="Layer_show/mask/V3.jpg" width="80%" />
 <i></i>
 
-不戴口罩的测试图片通过V2网络FPN层的P5层特征图可视化notmask/fpnP5_V2.jpg、以及通过V2网络FPN层的P6层特征图可视化notmask/fpnP6_V2.jpg，即使输入的图片没有戴口罩网络的注意力还是放在了口罩以外的人脸区域
+不戴口罩的测试图片通过V2网络FPN层的P5层特征图可视化notmask/fpnP5_V2.jpg、以及通过V2网络FPN层的P6层特征图可视化notmask/fpnP6_V2.jpg，即使输入的图片没有戴口罩网络的注意力还是放在了口罩以外的人脸区域<br>
 <img src="Layer_show/notmask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
-不戴口罩的测试图片通过V3网络V3最后一层卷积层的特征图可视化结果notmask/V3.jpg，V3网络加入了face_attention模块，但是输入的图片没有戴上口罩 网络的注意力没有集中在口罩以外的区域
+不戴口罩的测试图片通过V3网络V3最后一层卷积层的特征图可视化结果notmask/V3.jpg，V3网络加入了face_attention模块，但是输入的图片没有戴上口罩 网络的注意力没有集中在口罩以外的区域<br>
 <img src="Layer_show/notmask/V3.jpg" width="80%" />
 <i></i>
 
