@@ -93,19 +93,19 @@ LFWestMask_dataloader = torch.utils.data.DataLoader(
     shuffle=False
 )
 
-# 非LFW戴口罩测试数据生成器
-NOTLFWestMask_dataloader = torch.utils.data.DataLoader(
-    dataset = NOTLFWestMaskDataset(
-        dir=config['LFW_data_path'],
-        pairs_path=config['LFW_pairs'],
-        predicter_path=config['predicter_path'],
-        img_size=config['image_size'],
-        transform=test_data_transforms,
-        test_pairs_paths=config['test_pairs_paths']
-    ),
-    batch_size=config['test_batch_size'],
-    num_workers=config['num_workers'],
-    shuffle=False
-)
+# # 非LFW戴口罩测试数据生成器
+# NOTLFWestMask_dataloader = torch.utils.data.DataLoader(
+#     dataset = NOTLFWestMaskDataset(
+#         dir=config['LFW_data_path'],
+#         pairs_path=config['LFW_pairs'],
+#         predicter_path=config['predicter_path'],
+#         img_size=config['image_size'],
+#         transform=test_data_transforms,
+#         test_pairs_paths=config['test_pairs_paths']
+#     ),
+#     batch_size=config['test_batch_size'],
+#     num_workers=config['num_workers'],
+#     shuffle=False
+# )
 
 

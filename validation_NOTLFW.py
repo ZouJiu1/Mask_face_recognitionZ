@@ -32,12 +32,13 @@ model.load_state_dict(torch.load(model_path)['model_state_dict'])
 l2_distance = PairwiseDistance(2).cuda()
 # 出测试集准确度
 print("Validating on TestDataset! ...")
+
 model.eval() # 验证模式
 with torch.no_grad(): # 不传梯度了
     distances, labels = [], []
-    progress_bar = enumerate(tqdm(NOTLFWestMask_dataloader))
     # progress_bar = enumerate(tqdm(NOTLFWestMask_dataloader))
-    for batch_index, (data_a, data_b, label) in progress_bar:
+    # for batch_index, (data_a, data_b, label) in progress_bar:
+    for batch_index, (data_a, data_b, label) in enumerate(NOTLFWestMask_dataloader):
         # data_a, data_b, label这仨是一批的矩阵
         data_a = data_a.cuda()
         data_b = data_b.cuda()

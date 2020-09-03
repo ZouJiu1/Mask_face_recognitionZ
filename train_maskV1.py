@@ -104,7 +104,7 @@ def create_optimizer(model, new_lr):
 
 # 随机种子
 seed = 0
-optimizer = create_optimizer(model, 0.125)
+optimizer_model = create_optimizer(model, 0.125)
 torch.manual_seed(seed)  # 为CPU设置随机种子
 torch.cuda.manual_seed(seed)  # 为当前GPU设置随机种子
 torch.cuda.manual_seed_all(seed)  # 为所有GPU设置随机种子
@@ -202,12 +202,12 @@ for epoch in range(start_epoch, end_epoch):
         # LOSS = triplet_loss
 
         # 反向传播过程
-        optimizer.zero_grad()
+        optimizer_model.zero_grad()
         LOSS.backward()
-        optimizer.step()
+        optimizer_model.step()
 
         # update the optimizer learning rate
-        adjust_learning_rate(optimizer, epoch)
+        adjust_learning_rate(optimizer_model, epoch)
 
         # 记录log相关信息
         # 计算本个批次内的困难样本数量

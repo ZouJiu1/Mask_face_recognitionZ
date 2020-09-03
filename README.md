@@ -106,15 +106,11 @@ python compare.py
 
 ### 使用LFW验证测试集AUC结果
 ```bash
-python validLFW.py
+python validation_LFW.py
 ```
 ### 非LFW数据集生成LFW格式的pairs.txt文件
 ```bash
 python create_pairs.py
-```
-### 使用非LFW数据集验证测试集AUC结果
-```bash
-python validNOTLFW.py
 ```
 
 License

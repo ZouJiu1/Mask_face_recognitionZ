@@ -1,4 +1,6 @@
 import torch
+from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader, LFWestMask_dataloader
+
 version = 'V1'
 if version=='V1':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
@@ -11,12 +13,10 @@ elif version=='V3':
         resnet152_cbam
 import numpy as np
 from config_mask import config
-import tqdm
 import os
 from validate_on_LFW import evaluate_lfw
 from torch.nn.modules.distance import PairwiseDistance
-from Data_loader.Data_loader_facenet_mask import LFWestMask_dataloader, test_dataloader
-progress_bar = enumerate(tqdm(test_dataloader))
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 if config['model'] == 18:
@@ -52,8 +52,11 @@ print("Validating on TestDataset! ...")
 model.eval() # 验证模式
 with torch.no_grad():  # 不传梯度了
     distances, labels = [], []
-    progress_bar = enumerate(tqdm(test_dataloader))
-    for batch_index, (data_a, data_b, label) in progress_bar:
+    # print(1111111111, type(test_dataloader))
+    # print(test_dataloader[0])
+    # progress_bar = enumerate(tqdm(test_dataloader))
+    # for batch_index, (data_a, data_b, label) in progress_bar:
+    for batch_index, (data_a, data_b, label) in enumerate(test_dataloader):
         # data_a, data_b, label这仨是一批的矩阵
         data_a = data_a.cuda()
         data_b = data_b.cuda()
@@ -79,8 +82,9 @@ with torch.no_grad():  # 不传梯度了
 print("Validating on LFWMASKTestDataset! ...")
 with torch.no_grad():  # 不传梯度了
     distances, labels = [], []
-    progress_bar = enumerate(tqdm(LFWestMask_dataloader))
-    for batch_index, (data_a, data_b, label) in progress_bar:
+    # progress_bar = enumerate(tqdm(LFWestMask_dataloader))
+    # for batch_index, (data_a, data_b, label) in progress_bar:
+    for batch_index, (data_a, data_b, label) in enumerate(LFWestMask_dataloader):
         # data_a, data_b, label这仨是一批的矩阵
         data_a = data_a.cuda()
         data_b = data_b.cuda()
