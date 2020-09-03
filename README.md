@@ -108,7 +108,7 @@ python compare.py
 <img src="Layer_show/notmask/V3.jpg" width="80%" />
 <i></i>
 
-### 使用LFW验证测试集AUC结果
+### 使用LFW数据集验证测试集AUC结果
 ```bash
 python validation_LFW.py
 ```
