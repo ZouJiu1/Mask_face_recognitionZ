@@ -63,22 +63,45 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
     model.cuda()
     print('Using single-gpu training.')
 
-# optimizer
-print("Using {} optimizer.".format(config['optimizer']))
-if config['optimizer'] == "sgd":
-    optimizer_model = torch.optim.SGD(model.parameters(), lr=config['Learning_rate'])
+def adjust_learning_rate(optimizer, epoch):
+    if epoch<30:
+        lr =  0.125
+    elif (epoch>=30) and (epoch<60):
+        lr = 0.0625
+    elif (epoch >= 60) and (epoch < 90):
+        lr = 0.0155
+    elif (epoch >= 90) and (epoch < 120):
+        lr = 0.003
+    elif (epoch>=120) and (epoch<160):
+        lr = 0.0001
+    else:
+        lr = 0.00006
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
 
-elif config['optimizer'] == "adagrad":
-    optimizer_model = torch.optim.Adagrad(model.parameters(), lr=config['Learning_rate'])
 
-elif config['optimizer'] == "rmsprop":
-    optimizer_model = torch.optim.RMSprop(model.parameters(), lr=config['Learning_rate'])
+def create_optimizer(model, new_lr):
+    # setup optimizer
+    if config['optimizer'] == "sgd":
+        optimizer_model = torch.optim.SGD(model.parameters(), lr = new_lr,
+                              momentum=0.9, dampening=0.9,
+                              weight_decay=0)
+    elif config['optimizer'] == "adagrad":
+        optimizer_model = torch.optim.Adagrad(model.parameters(), lr = new_lr,
+                                  lr_decay=1e-4,
+                                  weight_decay=0)
 
-elif config['optimizer'] == "adam":
-    optimizer_model = torch.optim.Adam(model.parameters(), lr=config['Learning_rate'])
+    elif config['optimizer'] == "rmsprop":
+        optimizer_model = torch.optim.RMSprop(model.parameters(), lr = new_lr)
+
+    elif config['optimizer'] == "adam":
+        optimizer_model = torch.optim.Adam(model.parameters(), lr = new_lr,
+                               weight_decay=0)
+    return optimizer_model
 
 # 随机种子
 seed = 0
+optimizer = create_optimizer(model, 0.125)
 torch.manual_seed(seed)  # 为CPU设置随机种子
 torch.cuda.manual_seed(seed)  # 为当前GPU设置随机种子
 torch.cuda.manual_seed_all(seed)  # 为所有GPU设置随机种子
@@ -113,7 +136,7 @@ for epoch in range(start_epoch, end_epoch):
     # step小循环
     progress_bar = enumerate(tqdm(train_dataloader))
     for batch_idx, (batch_sample) in progress_bar:
-    # for batch_idx, (batch_sample) in enumerate(train_dataloader):
+        # for batch_idx, (batch_sample) in enumerate(train_dataloader):
         # length = len(train_dataloader)
         # fl=open('/home/Mask-face-recognition/output.txt', 'w')
         # for batch_idx, (batch_sample) in enumerate(train_dataloader):
@@ -176,9 +199,12 @@ for epoch in range(start_epoch, end_epoch):
         # LOSS = triplet_loss
 
         # 反向传播过程
-        optimizer_model.zero_grad()
+        optimizer.zero_grad()
         LOSS.backward()
-        optimizer_model.step()
+        optimizer.step()
+
+        # update the optimizer learning rate
+        adjust_learning_rate(optimizer, epoch)
 
         # 记录log相关信息
         # 计算本个批次内的困难样本数量

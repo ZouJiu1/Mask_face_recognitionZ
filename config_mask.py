@@ -13,7 +13,7 @@ config = dict()
 config['resume_path'] = 'Model_training_checkpoints/model_resnet34_cheahom_triplet_epoch_20_roc0.9337.pt'
 
 config['model'] = 34 # 18 34 50 101 152
-config['optimizer'] = 'adam'      # sgd\adagrad\rmsprop\adam
+config['optimizer'] = 'adagrad'      # sgd\adagrad\rmsprop\adam
 config['predicter_path'] = 'Data_preprocessing/shape_predictor_68_face_landmarks.dat'
 
 config['Learning_rate'] = 0.00001

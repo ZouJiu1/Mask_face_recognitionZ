@@ -16,7 +16,7 @@ import os
 from validate_on_LFW import evaluate_lfw
 from torch.nn.modules.distance import PairwiseDistance
 from Data_loader.Data_loader_facenet_mask import LFWestMask_dataloader, test_dataloader
-enumerate(tqdm(test_dataloader))
+progress_bar = enumerate(tqdm(test_dataloader))
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 if config['model'] == 18:
@@ -31,9 +31,12 @@ elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_7_rocNMD0.753_rocMasked0.626maskV1.pt'
+model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_13_rocNMD0.767_rocMasked0.624maskV1.pt'
 if os.path.exists(model_path) and (version in model_path):
-    model_state = torch.load(model_path)
+    if torch.cuda.is_available():
+        model_state = torch.load(model_path)
+    else:
+        model_state = torch.load(model_path, map_location='cpu')
     model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
     print('loaded %s' % model_path)
