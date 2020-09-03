@@ -75,9 +75,9 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 
 ### ROC_AUC曲线图
 左边的图片是使用不戴口罩的LFW测试图片，右边的图片是使用戴口罩的LFW测试图片
-<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.715_V1.png" width="39%" /></center>
-<img src="ROC_images/ROC_epoch%253A6_NOTMaskedLFW_aucnotmask0.802_V2.png" width="39%" /></center>
-<img src="ROC_images/ROC_epoch%3A44_NOTMaskedLFW_aucnotmask0.924_V3.png" width="39%" /></center>
+<img src="ROC_images/ROC_epoch%253A4_NOTMaskedLFW_aucnotmask0.715_V1.png" width="80%" /></center>
+<img src="ROC_images/ROC_epoch%253A6_NOTMaskedLFW_aucnotmask0.802_V2.png" width="80%" /></center>
+<img src="ROC_images/ROC_epoch%3A44_NOTMaskedLFW_aucnotmask0.924_V3.png" width="80%" /></center>
 <i></i>
 
 ### 两张图片对比向量距离以及特征图可视化
