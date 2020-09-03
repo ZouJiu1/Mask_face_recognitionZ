@@ -451,7 +451,10 @@ class ResNet(nn.Module):
             for level in attention:
                 i += 1
                 level = level.squeeze(0)
-                level = np.array(255 * unnormalize(level).detach().numpy()).copy()
+                if torch.cuda.is_available():
+                    level = np.array(255 * unnormalize(level).detach().cpu().numpy()).copy()
+                else:
+                    level = np.array(255 * unnormalize(level).detach().numpy()).copy()
                 level = np.transpose(level, (1, 2, 0))
                 plt.imsave(os.path.join(pwd, 'Layer_show', 'fpnP%s'%(8-i)+'_V1'+ '.jpg'), level[:, :, 0])
 
@@ -460,7 +463,7 @@ class ResNet(nn.Module):
         classification = torch.cat([self.classificationModel(feature).view((int(feature.size()[0]), -1)) for feature in features], dim=1)
         x = self.fc(classification)
         x = self.last_bn(x)
-        #
+        x = torch.div(x, torch.norm(x))*50
         # x = torch.cat([self.avgpool_1a(feature).view((int(feature.size()[0]), -1)) for feature in features], dim=1)
         # x = self.dropout(x)
         # x = self.last_linear(x)

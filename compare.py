@@ -4,10 +4,18 @@ import os
 import copy
 from PIL import Image
 import shutil
+import numpy as np
+import dlib
+import cv2
+import sys
+from config_mask import config
+import torchvision.transforms as transforms
+from torch.nn.modules.distance import PairwiseDistance
 pwd = os.path.abspath(__file__+'../../')
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
-version = 'V1'
-mask = False #是否给人脸戴口罩
+version = 'V3'
+mask = True #是否给人脸戴口罩
 
 if version=='V1':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
@@ -18,12 +26,6 @@ elif version=='V2':
 elif version=='V3':
     from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
-import numpy as np
-import dlib
-import cv2
-from config_mask import config
-import torchvision.transforms as transforms
-from torch.nn.modules.distance import PairwiseDistance
 
 if config['model'] == 18:
     model = resnet18_cbam(pretrained=False, showlayer= True, num_classes=128)
@@ -36,7 +38,8 @@ elif config['model'] == 101:
 elif config['model'] == 152:
     model = resnet152_cbam(pretrained=False, showlayer= True, num_classes=128)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model_path = r'C:\Users\EDZ\Desktop\projects\masked_face\Mask_face_recognitionZ\Model_training_checkpoints\model_34_triplet_epoch_5_rocNMD0.715_rocMasked0.629maskV1.pt'
+model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_16_rocNMD0.870_rocMasked0.635notmaskV3.pt'
+# model_path = r'C:\Users\EDZ\Desktop\projects\masked_face\Mask_face_recognitionZ\Model_training_checkpoints\model_34_triplet_epoch_5_rocNMD0.715_rocMasked0.629maskV1.pt'
 # model_path = r'C:\Users\EDZ\Desktop\projects\masked_face\Mask_face_recognitionZ\Model_training_checkpoints\model_34_triplet_epoch_7_rocNMD0.802_rocMasked0.617maskV2.pt'
 # model_path = r'C:\Users\EDZ\Desktop\projects\masked_face\Mask_face_recognitionZ\Model_training_checkpoints\model_34_triplet_epoch_5_rocNMD0.842_rocMasked0.655notmaskV3.pt'
 if os.path.exists(model_path) and (version in model_path):
@@ -49,6 +52,7 @@ if os.path.exists(model_path) and (version in model_path):
     print('loaded %s' % model_path)
 else:
     print('不存在预训练模型！')
+    sys.exit(0)
 
 if torch.cuda.is_available():
     model.cuda()

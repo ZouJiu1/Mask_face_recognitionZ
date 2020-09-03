@@ -450,7 +450,10 @@ class ResNet(nn.Module):
             for level in attention:
                 i += 1
                 level = level.squeeze(0)
-                level = np.array(255 * unnormalize(level).detach().numpy()).copy()
+                if torch.cuda.is_available():
+                    level = np.array(255 * unnormalize(level).detach().cpu().numpy()).copy()
+                else:
+                    level = np.array(255 * unnormalize(level).detach().numpy()).copy()
                 level = np.transpose(level, (1, 2, 0))
                 plt.imsave(os.path.join(pwd, 'Layer_show', 'fpnP%s'%(8-i)+'_V2' + '.jpg'), level[:,:,0])
 
@@ -464,6 +467,7 @@ class ResNet(nn.Module):
         x = self.dropout(x)
         x = self.last_linear(x)
         x = self.last_bn(x)
+        x = torch.div(x, torch.norm(x))*50
         if self.training:
             mask_loss = self.levelattentionLoss(img.shape, attention, annotations)
             return x, mask_loss

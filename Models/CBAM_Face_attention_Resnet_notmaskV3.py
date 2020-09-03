@@ -244,14 +244,17 @@ class ResNet(nn.Module):
             for level in [x]:
                 i += 1
                 level = level.squeeze(0)
-                level = np.array(255 * unnormalize(level).detach().numpy()).copy()
+                if torch.cuda.is_available():
+                    level = np.array(255 * unnormalize(level).detach().cpu().numpy()).copy()
+                else:
+                    level = np.array(255 * unnormalize(level).detach().numpy()).copy()
                 level = np.transpose(level, (1, 2, 0))
                 plt.imsave(os.path.join(pwd, 'Layer_show', 'V3'+ '.jpg'), level[:,:,0])
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         # print(11111111111, x.size())
         x = self.fc(x)
-
+        x = torch.div(x, torch.norm(x))*50
         if self.training:
             return x, loss
         else:

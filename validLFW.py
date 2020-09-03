@@ -16,7 +16,8 @@ import os
 from validate_on_LFW import evaluate_lfw
 from torch.nn.modules.distance import PairwiseDistance
 from Data_loader.Data_loader_facenet_mask import LFWestMask_dataloader, test_dataloader
-
+enumerate(tqdm(test_dataloader))
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 if config['model'] == 18:
     model = resnet18_cbam(pretrained=True, showlayer= False,num_classes=128)
@@ -38,6 +39,9 @@ if os.path.exists(model_path) and (version in model_path):
     print('loaded %s' % model_path)
 else:
     print('不存在预训练模型！')
+
+if torch.cuda.is_available():
+    model.cuda()
 
 l2_distance = PairwiseDistance(2).cuda()
 # 出测试集准确度

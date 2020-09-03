@@ -161,8 +161,14 @@ for epoch in range(start_epoch, end_epoch):
             positive=pos_hard_embedding,
             negative=neg_hard_embedding
         ).cuda()
+        # triplet_loss = TripletLoss(margin=config['margin']).forward(
+        #     anchor=anc_embedding,
+        #     positive=pos_embedding,
+        #     negative=neg_embedding
+        # ).cuda()
         # 计算这个批次困难样本的attention loss（这个loss实际上在forward过程里已经计算了，这里就是整合一下求个mean）
         hard_attention_loss = torch.cat([hard_anc_attention_loss, hard_pos_attention_loss, hard_neg_attention_loss])
+        # hard_attention_loss = torch.cat([anc_attention_loss, pos_attention_loss, neg_attention_loss])
         hard_attention_loss = torch.mean(hard_attention_loss).cuda()
         hard_attention_loss = hard_attention_loss.type(torch.FloatTensor)
         # 计算总顺势
@@ -383,7 +389,7 @@ for epoch in range(start_epoch, end_epoch):
         # if flag_validate_lfw:
         # state['best_distance_threshold'] = np.mean(best_distances)
         #
-        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNMD{:.3f}_rocMasked{:.3f}maskV2.pt'.format(config['model'],
+        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNotMasked{:.3f}_rocMasked{:.3f}maskV2.pt'.format(config['model'],
                                                                                                      epoch + 1,
                                                                                                      roc_auc,roc_auc_mask))
 # Training loop end
