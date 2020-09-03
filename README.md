@@ -64,6 +64,7 @@ train_triplets_path：这个是随机生成训练三元组的保存路径
 test_pairs_paths：这个是随机生成测试三元组的保存路径
 ```
 ### 训练
+训练最开始的时候会生成triplets图片对，生成的图片对会保存起来，以便之后使用
 ```bash
 戴口罩V1运行: python train_maskV1.py
 戴口罩V2运行: python train_maskV2.py
@@ -93,6 +94,7 @@ python compare.py
 ```
 ### 特征图可视化结果
 这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的测试拼接图片<br> 
+图片里面的文字，dis:*代表两张人脸的特征向量的欧氏距离，有lay标记的是输出特征图的人脸<br>
 <img src="Layer_show/mask/dis0.860_faceshow_V1.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.257_faceshow_V1.jpg" width="39%" /><br>
 戴口罩的测试图片通过V2网络FPN层的P5层特征图可视化mask/fpnP5_V2.jpg、以及通过V2网络FPN层的P6层特征图可视化mask/fpnP6_V2.jpg，可见网络的注意力放在了口罩以外的人脸区域<br>
 <img src="Layer_show/mask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
