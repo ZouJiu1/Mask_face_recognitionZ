@@ -55,6 +55,7 @@ train_dataloader = torch.utils.data.DataLoader(
         num_triplets = config['num_train_triplets'],
         training_triplets_path = config['train_triplets_path'],
         transform = train_data_transforms,
+        txt_mask='txt',
         predicter_path = config['predicter_path'],
         img_size = config['image_size']
     ),
@@ -91,6 +92,25 @@ LFWestMask_dataloader = torch.utils.data.DataLoader(
     batch_size=config['test_batch_size'],
     num_workers=config['num_workers'],
     shuffle=False
+)
+
+# 训练数据生成器
+from config_notmask import config as notcf
+V9_train_dataloader = torch.utils.data.DataLoader(
+    dataset = TrainDataset(
+        face_dir = config['train_data_path'],
+        mask_dir = notcf['mask_data_path'],
+        csv_name = config['train_data_index'],
+        num_triplets = config['num_train_triplets'],
+        training_triplets_path = config['train_triplets_path'],
+        transform = train_data_transforms,
+        txt_mask='mask',
+        predicter_path = config['predicter_path'],
+        img_size = config['image_size']
+    ),
+    batch_size = config['train_batch_size'],
+    num_workers = config['num_workers'],
+    shuffle = False
 )
 
 # # 非LFW戴口罩测试数据生成器

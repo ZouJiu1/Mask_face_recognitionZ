@@ -20,10 +20,7 @@ mask = True #是否给人脸戴口罩
 if version=='V1':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
-elif version=='V2':
-    from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
-        resnet152_cbam
-elif version=='V3':
+elif (version=='V3') or (version=='V9'):
     from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
 

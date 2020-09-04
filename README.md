@@ -8,7 +8,9 @@
 口罩人脸数据：Real-World-Masked-Face-Dataset，链接：https://github.com/X-zhangyang/Real-World-Masked-Face-Dataset <br>   
 ### 模型
 以标准人脸识别模型[FaceNet](https://arxiv.org/abs/1503.03832) 为主线，添加fpn_face_attention结构，增加CBAM模块，使其能更好的聚焦于人脸上半部，没带口罩的区域<br>
-这里提供了三个版本的模型，一个是戴口罩的模型V1和V2，一个是没带口罩的模型V3，带口罩的模型V1和V2的区别仅在于训练网络不同<br>
+这里提供了三个版本的模型，一个是输入为戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件的模型V1<br>
+一个是输入为没带口罩人脸图片和口罩以上人脸mask图片的模型V3，最后一个是输入为戴口罩人脸和口罩以上人脸mask图片的模型V9<br>
+都使用mask图片的模型V3和V9的区别仅在于输入人脸图片有没有戴口罩，网络和损失函数都相同<br>
 
 ### 下载相应数据
 生成一个Datasets文件夹，把VGGFace2的原始数据(VGGFace2_train文件)、LFW原始数据(lfw_funneled)、LFW配对文件(LFW_pairs.txt)，都放到Datasets文件夹，并解压，VGGface是用做训练集的，LFW是用做测试集的<br>
@@ -37,6 +39,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 使用Data_preprocessing/Make_csv_file_notmask.py，输入数据文件夹路径、输出csv文件路径，然后就能跑了，保存的csv格式形如：序号，图片名称，人名<br>
 
 ###### 生成结果展示
+这里生成不戴口罩的人脸图片以及口罩区域以上人脸的mask图片
 <img src="Datasets/vggface2_train_face_notmask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_notmask/n009261/0001_01.jpg" width="39%" />
 <i></i>
 
@@ -49,10 +52,11 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 使用Data_preprocessing/Make_csv_file_mask.py，输入数据文件夹路径、输出csv文件路径，然后就能跑了，保存的csv格式形：序号，图片名称，人名<br>
 
 ###### 生成结果展示
+生成戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件
 <img src="Datasets/vggface2_train_face_mask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_mask/n009261/0001_01.jpg" width="39%" />
 <i></i>
 
-###### 设置notmasked=True；masked=True，则会同时生成带口罩的和不戴口罩的
+##### 设置notmasked=True；masked=True，则会同时生成带口罩的和不戴口罩的，V9模型需要这样设置，因为V9模型需要戴口罩人脸和以及口罩区域以上人脸的mask图片
 
 ### 配置文件理解
 不戴口罩的修改config_notmask.py，戴口罩的修改config_mask.py文件 
@@ -67,8 +71,8 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 训练最开始的时候会生成triplets图片对，生成的图片对会保存起来，以便之后使用
 ```bash
 戴口罩V1运行: python train_maskV1.py
-戴口罩V2运行: python train_maskV2.py
 不戴口罩V3运行: python train_notmaskV3.py
+戴口罩V9运行: python train_maskV9.py
 ```
 ### 训练以后验证模型效果
 验证测试过程中会采用戴口罩的LFW数据和不戴口罩的LFW数据，会打印输出相应的AUC结果，其中evaluate_lfw函数中的参数pltshow，用来控制是否保存ROC曲线图,ROC曲线图保存在ROC_images文件夹里面<br>
@@ -76,6 +80,7 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 
 ### ROC_AUC曲线图
 左边的图片是使用不戴口罩的LFW测试图片，右边的图片是使用戴口罩的LFW测试图片
+其中epoch后接的是epoch数，NOTMaskedLFW含义是不戴口罩的LFW测试集，MaskedLFW是戴口罩的LFW测试集，auc后接的是该测试集的auc结果
 <img src="ROC_images/ROC_epoch_4_NOTMaskedLFW_aucnotmask0.715_V1.png" width="80%" /></center>
 <i></i>
 <img src="ROC_images/ROC_epoch_6_NOTMaskedLFW_aucnotmask0.802_V2.png" width="80%" /></center>
@@ -84,7 +89,7 @@ test_pairs_paths：这个是随机生成测试三元组的保存路径
 <i></i>
 
 ### 两张图片对比向量距离以及特征图可视化
-保存的特征图在Layer_show文件夹里面，保存的是img2_path这张图片的特征图，version控制网络版本V1、V2和V3，mask控制人脸是否戴口罩，<br>
+保存的特征图在Layer_show文件夹里面，保存的是img2_path这张图片的特征图，version控制网络版本V1、V3和V9，mask控制人脸是否戴口罩，<br>
 戴口罩的特征图保存在Layer_show/mask里面，不戴口罩的特征图保存在Layer_show/notmask里面<br>
 dis2.972_faceshow_V3.jpg代表欧氏距离是2.972，V3代表使用的是V3版网络和模型，图中右边的是img2_path对应的图片<br>
 fpnP3_V1.jpg代表V1网络模型中的fpn层中的P3层的特征图可视化，例外的是V3.jpg，因为V3网络没有FPN层，所以只有最后一层的可视化图片

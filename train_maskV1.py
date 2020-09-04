@@ -41,7 +41,7 @@ model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
 x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V1' in i]
 x.sort()
 for i in os.listdir(model_path):
-    if ('epoch_'+str(x[-1]) in i) and ('V1' in i):
+    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V1' in i):
         model_path = os.path.join(model_path, i)
         break
 if os.path.exists(model_path) and ('V1' in model_path):
@@ -67,15 +67,15 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
 print("Using {} optimizer.".format(config['optimizer']))
 
 def adjust_learning_rate(optimizer, epoch):
-    if epoch<30:
+    if epoch<100:
         lr =  0.125
-    elif (epoch>=30) and (epoch<60):
+    elif (epoch>=100) and (epoch<200):
         lr = 0.0625
-    elif (epoch >= 60) and (epoch < 90):
+    elif (epoch >= 200) and (epoch < 300):
         lr = 0.0155
-    elif (epoch >= 90) and (epoch < 120):
+    elif (epoch >= 300) and (epoch < 360):
         lr = 0.003
-    elif (epoch>=120) and (epoch<160):
+    elif (epoch>=360) and (epoch<390):
         lr = 0.0001
     else:
         lr = 0.00006
@@ -252,7 +252,7 @@ for epoch in range(start_epoch, end_epoch):
             distances=distances,
             labels=labels,
             epoch = 'epoch_'+str(epoch),
-            tag = 'NOTMaskedLFW_aucnotmask',
+            tag = 'NOTMaskedLFW_auc',
             version = 'V1',
             pltshow=True
         )
@@ -279,7 +279,7 @@ for epoch in range(start_epoch, end_epoch):
             distances=distances,
             labels=labels,
             epoch = 'epoch_'+str(epoch),
-            tag = 'MaskedLFW_aucmask',
+            tag = 'MaskedLFW_auc',
             version = 'V1',
             pltshow=True
         )

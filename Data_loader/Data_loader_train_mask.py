@@ -20,13 +20,14 @@ from config_mask import config
 # 训练数据
 class TrainDataset(Dataset):
     def __init__(self, face_dir, mask_dir, csv_name, num_triplets, predicter_path, img_size,
-                 training_triplets_path=None, transform=None):
+                 txt_mask = 'txt', training_triplets_path=None, transform=None):
         # 初始化
         self.df = pd.read_csv(csv_name, dtype={'id': object, 'name': object, 'class': int})
         self.face_dir = face_dir
         self.mask_dir = mask_dir
         self.num_triplets = num_triplets
         self.transform = transform
+        self.txt_mask = txt_mask
 
         # self.detector = dlib.get_frontal_face_detector()
         # self.predictor = dlib.shape_predictor(predicter_path)
@@ -205,23 +206,23 @@ class TrainDataset(Dataset):
         pos_img = Image.open(pos_img).convert('RGB')
         neg_img = Image.open(neg_img).convert('RGB')
 
-        with open(anc_mask, 'r') as obj:
-            anc_mask = np.array([int(i) for i in obj.readline().strip().split(',')])
-        with open(pos_mask) as obj:
-            pos_mask = np.array([int(i) for i in obj.readline().strip().split(',')])
-        with open(neg_mask) as obj:
-            neg_mask = np.array([int(i) for i in obj.readline().strip().split(',')])
-        # anc_mask = cv2.imread(anc_mask, cv2.IMREAD_GRAYSCALE)
-        # pos_mask = cv2.imread(pos_mask, cv2.IMREAD_GRAYSCALE)
-        # neg_mask = cv2.imread(neg_mask, cv2.IMREAD_GRAYSCALE)
-
+        if self.txt_mask=='txt':
+            with open(anc_mask, 'r') as obj:
+                anc_mask = np.array([int(i) for i in obj.readline().strip().split(',')])
+            with open(pos_mask) as obj:
+                pos_mask = np.array([int(i) for i in obj.readline().strip().split(',')])
+            with open(neg_mask) as obj:
+                neg_mask = np.array([int(i) for i in obj.readline().strip().split(',')])
+        elif self.txt_mask=='mask':
+            anc_mask = cv2.imread(anc_mask, cv2.IMREAD_GRAYSCALE)
+            pos_mask = cv2.imread(pos_mask, cv2.IMREAD_GRAYSCALE)
+            neg_mask = cv2.imread(neg_mask, cv2.IMREAD_GRAYSCALE)
+            # mask_anc = Image.fromarray(mask_anc)
+            # mask_pos = Image.fromarray(mask_pos)
+            # mask_neg = Image.fromarray(mask_neg)
         # face_anc = Image.fromarray(cv2.cvtColor(face_anc,cv2.COLOR_BGR2RGB))
         # face_pos = Image.fromarray(cv2.cvtColor(face_pos,cv2.COLOR_BGR2RGB))
         # face_neg = Image.fromarray(cv2.cvtColor(face_neg,cv2.COLOR_BGR2RGB))
-
-        # mask_anc = Image.fromarray(mask_anc)
-        # mask_pos = Image.fromarray(mask_pos)
-        # mask_neg = Image.fromarray(mask_neg)
 
         # 把类转成tensor
         pos_class = torch.from_numpy(np.array([pos_class]).astype('long'))
@@ -247,15 +248,3 @@ class TrainDataset(Dataset):
             sample['neg_img'] = self.transform(sample['neg_img'])
 
         return sample
-
-
-
-
-
-
-
-
-
-
-
-
