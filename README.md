@@ -39,7 +39,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 使用Data_preprocessing/Make_csv_file_notmask.py，输入数据文件夹路径、输出csv文件路径，然后就能跑了，保存的csv格式形如：序号，图片名称，人名<br>
 
 ###### 生成结果展示
-这里生成不戴口罩的人脸图片以及口罩区域以上人脸的mask图片
+这里生成不戴口罩的人脸图片以及口罩区域以上人脸的mask图片<br>
 <img src="Datasets/vggface2_train_face_notmask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_notmask/n009261/0001_01.jpg" width="39%" />
 <i></i>
 
@@ -52,7 +52,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 使用Data_preprocessing/Make_csv_file_mask.py，输入数据文件夹路径、输出csv文件路径，然后就能跑了，保存的csv格式形：序号，图片名称，人名<br>
 
 ###### 生成结果展示
-生成戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件
+生成戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件<br>
 <img src="Datasets/vggface2_train_face_mask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_mask/n009261/0001_01.jpg" width="39%" />
 <i></i>
 
