@@ -101,18 +101,18 @@ python compare.py
 ### 同一个人特征图可视化结果
 这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的测试拼接图片<br> 
 图片里面的文字，dis:*代表两张人脸的特征向量的欧氏距离，有lay标记的是输出特征图的人脸<br>
-V9网络戴口罩测试的结果                                                        V9网络不戴口罩测试的结果<br>
+V9网络戴口罩测试的结果 &emsp;&emsp;&emsp; V9网络不戴口罩测试的结果<br>
 <img src="Layer_show/mask/dis0.069_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.067_faceshow_V9.jpg" width="39%" /><br>
 <br>
 戴口罩的测试图片通过V1网络FPN层的P5层特征图可视化mask/fpnP5_V2.jpg、以及通过V1网络FPN层的P6层特征图可视化mask/fpnP6_V2.jpg<br>
 <img src="Layer_show/mask/fpnP5_V1.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V1.jpg" width="39%" /><br>
-戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg &emsp; 戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
+戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg &emsp;&emsp; 戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
 <img src="Layer_show/mask/V3.jpg" width="39%" /> <img src="Layer_show/mask/V9.jpg" width="39%" />
 <i></i>
 
 不戴口罩的测试图片通过V1网络FPN层的P5层特征图可视化notmask/fpnP5_V2.jpg、以及通过V1网络FPN层的P6层特征图可视化notmask/fpnP6_V2.jpg，即使输入的图片没有戴口罩网络的注意力还是放在了口罩以外的人脸区域<br>
 <img src="Layer_show/notmask/fpnP5_V1.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V1.jpg" width="39%" /><br>
-不戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg &emsp; 不戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
+不戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg &emsp;&emsp; 不戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
 <img src="Layer_show/notmask/V3.jpg" width="39%" /> <img src="Layer_show/notmask/V9.jpg" width="39%" />
 <i></i>
 
