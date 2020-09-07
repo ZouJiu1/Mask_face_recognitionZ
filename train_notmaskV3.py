@@ -69,16 +69,14 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
 def adjust_learning_rate(optimizer, epoch):
     if epoch<96:
         lr =  0.125
-    elif (epoch>=96) and (epoch<300):
+    elif (epoch>=96) and (epoch<160):
         lr = 0.0625
-    elif (epoch >= 300) and (epoch < 330):
+    elif (epoch >= 160) and (epoch < 210):
         lr = 0.0155
-    elif (epoch >= 330) and (epoch < 360):
+    elif (epoch >= 210) and (epoch < 250):
         lr = 0.003
-    elif (epoch>=360) and (epoch<390):
-        lr = 0.0001
     else:
-        lr = 0.00006
+        lr = 0.0001
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 

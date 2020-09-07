@@ -442,8 +442,8 @@ class ResNet(nn.Module):
         attention = [self.levelattentionModel(feature) for feature in features]
         features = [features[i] * torch.exp(attention[i]) for i in range(len(features))]
 
-        print('Face_attention: ', 'length: ',len(attention),' size: ', attention[0].size(), \
-              'unique value[0]: ', np.unique(attention[1].squeeze().detach().cpu().numpy()))
+        # print('Face_attention: ', 'length: ',len(attention),' size: ', attention[0].size(), \
+        #       'unique value[0]: ', np.unique(attention[1].squeeze().detach().cpu().numpy()))
         if self.showlayer:
             i = 0
             for level in features:

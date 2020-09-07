@@ -10,7 +10,8 @@
 以标准人脸识别模型[FaceNet](https://arxiv.org/abs/1503.03832) 为主线，添加fpn_face_attention结构，增加CBAM模块，使其能更好的聚焦于人脸上半部，没带口罩的区域<br>
 这里提供了三个版本的模型，一个是输入为戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件的模型V1<br>
 一个是输入为没带口罩人脸图片和口罩以上人脸mask图片的模型V3，最后一个是输入为戴口罩人脸和口罩以上人脸mask图片的模型V9<br>
-都使用mask图片的模型V3和V9的区别仅在于输入人脸图片有没有戴口罩，网络和损失函数都相同<br>
+都使用mask图片的模型V3和V9的区别仅在于输入人脸图片有没有戴口罩，网络和损失函数都相同，所有网络采用的基础网络都是Resnet34<br>
+V1网络对应train_maskV1.py文件，V3网络对应train_notmaskV3.py文件，V9网络对应train_maskV9.py文件<br>
 
 ### 下载相应数据
 生成一个Datasets文件夹，把VGGFace2的原始数据(VGGFace2_train文件)、LFW原始数据(lfw_funneled)、LFW配对文件(LFW_pairs.txt)，都放到Datasets文件夹，并解压，VGGface是用做训练集的，LFW是用做测试集的<br>
@@ -100,22 +101,18 @@ python compare.py
 ### 同一个人特征图可视化结果
 这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的测试拼接图片<br> 
 图片里面的文字，dis:*代表两张人脸的特征向量的欧氏距离，有lay标记的是输出特征图的人脸<br>
-V1网络戴口罩测试的结果                                                        V1网络不戴口罩测试的结果<br>
-<img src="Layer_show/mask/dis0.083_faceshow_V1.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.043_faceshow_V1.jpg" width="39%" /><br>
-V3网络戴口罩测试的结果                                                        V3网络不戴口罩测试的结果<br>
-<img src="Layer_show/mask/dis0.249_faceshow_V3.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.281_faceshow_V3.jpg" width="39%" /><br>
 V9网络戴口罩测试的结果                                                        V9网络不戴口罩测试的结果<br>
 <img src="Layer_show/mask/dis0.069_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.067_faceshow_V9.jpg" width="39%" /><br>
 <br>
 戴口罩的测试图片通过V1网络FPN层的P5层特征图可视化mask/fpnP5_V2.jpg、以及通过V1网络FPN层的P6层特征图可视化mask/fpnP6_V2.jpg<br>
-<img src="Layer_show/mask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
-戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg，戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
+<img src="Layer_show/mask/fpnP5_V1.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V1.jpg" width="39%" /><br>
+戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg &emsp; 戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
 <img src="Layer_show/mask/V3.jpg" width="39%" /> <img src="Layer_show/mask/V9.jpg" width="39%" />
 <i></i>
 
 不戴口罩的测试图片通过V1网络FPN层的P5层特征图可视化notmask/fpnP5_V2.jpg、以及通过V1网络FPN层的P6层特征图可视化notmask/fpnP6_V2.jpg，即使输入的图片没有戴口罩网络的注意力还是放在了口罩以外的人脸区域<br>
-<img src="Layer_show/notmask/fpnP5_V2.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V2.jpg" width="39%" /><br>
-不戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg，不戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
+<img src="Layer_show/notmask/fpnP5_V1.jpg" width="39%" /> <img src="Layer_show/notmask/fpnP6_V1.jpg" width="39%" /><br>
+不戴口罩的测试图片通过V3网络最后一层卷积层的特征图可视化结果mask/V3.jpg &emsp; 不戴口罩的测试图片通过V9网络最后一层卷积层的特征图可视化结果mask/V9.jpg<br>
 <img src="Layer_show/notmask/V3.jpg" width="39%" /> <img src="Layer_show/notmask/V9.jpg" width="39%" />
 <i></i>
 
@@ -124,7 +121,21 @@ V9网络戴口罩测试的结果                                                
 <img src="Layer_show/mask/dis0.237_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.267_faceshow_V9.jpg" width="39%" /><br>
 
 ### 使用LFW数据集验证测试集AUC结果
-测试结果包含AUC、Accuray和最佳距离指标等，这里测得的V1网络的最佳距离是：；V3网络最佳距离是：；V9网络最佳距离是：。
+测试结果包含AUC、Accuray和最佳距离指标等，测试集相同但输入网络有两种图片呢，一种是戴口罩的LFW人脸图片，一种是不戴口罩的LFW人脸图片<br>
+从表格里面可以看到V3的AUC最大，V9的AUC差值最小
+
+| 不戴口罩的图片 | 网络的版本 | AUC | ACC | Recall | Precision | Best_distance |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+|  | V1 | 0.808 | 0.736+-0.015 | 0.852+-0.040 | 0.689+-0.017 | 0.097 |
+|  | V3 | 0.950 | 0.880+-0.015 | 0.926+-0.013 | 0.847+-0.022 | 0.126 |
+|  | V9 | 0.918 | 0.849+-0.014 | 0.861+-0.020 | 0.838+-0.024 | 0.049 |
+
+| 戴口罩的图片 | 网络的版本 | AUC | ACC | Recall | Precision | Best_distance |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+|  | V1 | 0.751 | 0.696+-0.027 | 0.756+-0.030 | 0.671+-0.027 | 0.090 |
+|  | V3 | 0.768 | 0.700+-0.021 | 0.707+-0.076 | 0.696+-0.038 | 0.076 |
+|  | V9 | 0.832 | 0.759+-0.018 | 0.762+-0.030 | 0.753+-0.020 | 0.046 |
+
 ```bash
 python validation_LFW.py
 ```
@@ -132,7 +143,10 @@ python validation_LFW.py
 ```bash
 python create_pairs.py
 ```
-
+### 使用生成的paris.txt文件验证测试非LFW数据集
+```bash
+python validation_NOTLFW.py
+```
 License
 ~~~~~~~
 `Free software: MIT license <https://github.com/shiheyingzhe/Mask_face_recognitionZ/LICENSE>`_

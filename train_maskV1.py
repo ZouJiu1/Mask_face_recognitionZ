@@ -77,13 +77,13 @@ print("Using {} optimizer.".format(config['optimizer']))
 def adjust_learning_rate(optimizer, epoch):
     if epoch<30:
         lr =  0.125
-    elif (epoch>=30) and (epoch<80):
+    elif (epoch>=30) and (epoch<60):
         lr = 0.0625
-    elif (epoch >= 80) and (epoch < 120):
+    elif (epoch >= 60) and (epoch < 90):
         lr = 0.0155
-    elif (epoch >= 120) and (epoch < 160):
+    elif (epoch >= 90) and (epoch < 120):
         lr = 0.003
-    elif (epoch>=160) and (epoch<190):
+    elif (epoch>=120) and (epoch<160):
         lr = 0.0001
     else:
         lr = 0.00006

@@ -1,23 +1,24 @@
 import torch
 from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader, LFWestMask_dataloader
 
-version = 'V1'
-if version=='V1':
+version = 'V3'
+if version=='V1' or version=='V6':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
 elif version=='V2':
     from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
-elif version=='V3':
+elif (version=='V3') or (version=='V9'):
     from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
+
 import numpy as np
 from config_mask import config
 import os
 from validate_on_LFW import evaluate_lfw
 from torch.nn.modules.distance import PairwiseDistance
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 if config['model'] == 18:
     model = resnet18_cbam(pretrained=True, showlayer= False,num_classes=128)
@@ -31,7 +32,14 @@ elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_13_rocNMD0.767_rocMasked0.624maskV1.pt'
+if version=='V1':
+    model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_30_rocNotMasked0.819_rocMasked0.764maskV1.pt'
+elif version=='V3':
+    # model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_216_rocNotMasked0.951_rocMasked0.766notmaskV3.pt'
+    model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_208_rocNotMasked0.952_rocMasked0.746notmaskV3.pt'
+elif version=='V9':
+    model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_19_rocNotMasked0.918_rocMasked0.831notmaskV9.pt'
+
 if os.path.exists(model_path) and (version in model_path):
     if torch.cuda.is_available():
         model_state = torch.load(model_path)
@@ -62,6 +70,8 @@ with torch.no_grad():  # 不传梯度了
         data_b = data_b.cuda()
         label = label.cuda()
         output_a, output_b = model(data_a), model(data_b)
+        output_a = torch.div(output_a, torch.norm(output_a))
+        output_b = torch.div(output_b, torch.norm(output_b))
         distance = l2_distance.forward(output_a, output_b)
         # 列表里套矩阵
         labels.append(label.cpu().detach().numpy())
@@ -90,6 +100,8 @@ with torch.no_grad():  # 不传梯度了
         data_b = data_b.cuda()
         label = label.cuda()
         output_a, output_b = model(data_a), model(data_b)
+        output_a = torch.div(output_a, torch.norm(output_a))
+        output_b = torch.div(output_b, torch.norm(output_b))
         distance = l2_distance.forward(output_a, output_b)
         # 列表里套矩阵
         labels.append(label.cpu().detach().numpy())
@@ -108,21 +120,21 @@ with torch.no_grad():  # 不传梯度了
         pltshow=True
     )
 # 打印日志内容
-print('LFW没带口罩的结果test_log:\tAUC: {:.4f}\tACC: {:.4f}+-{:.4f}\trecall: {:.4f}+-{:.4f}\tPrecision {:.4f}+-{:.4f}\t'.format(
+print('LFW没带口罩的结果test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
     roc_auc,
     np.mean(accuracy),
     np.std(accuracy),
     np.mean(recall),
     np.std(recall),
     np.mean(precision),
-    np.std(precision),)
+    np.std(precision))+'\tbest_distance:{:.3f}\t'.format(np.mean(best_distances))
 )
-print('\nLFW带口罩的结果test_log:\tAUC: {:.4f}\tACC: {:.4f}+-{:.4f}\trecall: {:.4f}+-{:.4f}\tPrecision {:.4f}+-{:.4f}\t'.format(
+print('\nLFW带口罩的结果test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
     roc_auc_mask,
     np.mean(accuracy_mask),
     np.std(accuracy_mask),
     np.mean(recall_mask),
     np.std(recall_mask),
     np.mean(precision_mask),
-    np.std(precision_mask),)
+    np.std(precision_mask))+'\tbest_distance:{:.3f}\t'.format(np.mean(best_distances_mask))
 )

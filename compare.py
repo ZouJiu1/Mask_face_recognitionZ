@@ -46,7 +46,12 @@ for i in os.listdir(model_path):
     if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and (version in i):
         model_path = os.path.join(model_path, i)
         break
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_146_rocNotMasked0.909_rocMasked0.819notmaskV9.pt'
+if version=='V1':
+    model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_30_rocNotMasked0.819_rocMasked0.764maskV1.pt'
+elif version=='V3':
+    model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_216_rocNotMasked0.951_rocMasked0.766notmaskV3.pt'
+elif version=='V9':
+    model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_19_rocNotMasked0.918_rocMasked0.831notmaskV9.pt'
 print(model_path)
 if os.path.exists(model_path) and (version in model_path):
     if torch.cuda.is_available():
