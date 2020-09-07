@@ -23,7 +23,7 @@ from Data_loader.Data_loader_train_notmask import TrainDataset
 from config_mask import config
 from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
     resnet152_cbam
-
+pwd = os.path.abspath('./')
 print("Using {} model architecture.".format(config['model']))
 start_epoch = 0
 
@@ -38,22 +38,22 @@ elif config['model'] == 101:
 elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
 
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
+model_path = os.path.join(pwd, 'Model_training_checkpoints')
 x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V9' in i]
 x.sort()
 for i in os.listdir(model_path):
     if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V9' in i):
-        model_path = os.path.join(model_path, i)
+        model_pathi = os.path.join(model_path, i)
         break
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_19_rocNotMasked0.918_rocMasked0.831notmaskV9.pt'
-if os.path.exists(model_path) and ('V9' in model_path):
-    model_state = torch.load(model_path)
+
+if os.path.exists(model_pathi) and ('V9' in model_pathi):
+    model_state = torch.load(model_pathi)
     model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
-    print('loaded %s' % model_path)
+    print('loaded %s' % model_pathi)
 else:
     print('不存在预训练模型！')
-start_epoch = 148
+
 flag_train_gpu = torch.cuda.is_available()
 flag_train_multi_gpu = False
 if flag_train_gpu and torch.cuda.device_count() > 1:
@@ -80,7 +80,6 @@ def adjust_learning_rate(optimizer, epoch):
         lr = 0.00006
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
-
 
 def create_optimizer(model, new_lr):
     # setup optimizer

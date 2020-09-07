@@ -13,6 +13,11 @@
 都使用mask图片的模型V3和V9的区别仅在于输入人脸图片有没有戴口罩，网络和损失函数都相同，所有网络采用的基础网络都是Resnet34<br>
 V1网络对应train_maskV1.py文件，V3网络对应train_notmaskV3.py文件，V9网络对应train_maskV9.py文件<br>
 
+### 训练模型下载
+V1对应网络模型：
+V3对应网络模型：
+V9对应网络模型：
+
 ### 下载相应数据
 生成一个Datasets文件夹，把VGGFace2的原始数据(VGGFace2_train文件)、LFW原始数据(lfw_funneled)、LFW配对文件(LFW_pairs.txt)，都放到Datasets文件夹，并解压，VGGface是用做训练集的，LFW是用做测试集的<br>
 

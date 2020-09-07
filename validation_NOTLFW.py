@@ -3,7 +3,9 @@ import os
 import sys
 from torch.nn.modules.distance import PairwiseDistance
 l2_distance = PairwiseDistance(2)#.cuda()
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+pwd = os.path.abspath('./')
 
 version = 'V3'
 mask = False #是否给人脸戴口罩
@@ -35,23 +37,28 @@ elif config['model'] == 101:
 elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
-
+model_path = os.path.join(pwd, 'Model_training_checkpoints')
 x = [int(i.split('_')[4]) for i in os.listdir(model_path) if version in i]
 x.sort()
 for i in os.listdir(model_path):
     if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and (version in i):
-        model_path = os.path.join(model_path, i)
+        model_pathi = os.path.join(model_path, i)
         break
+if version=='V1':
+    model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_30_rocNotMasked0.819_rocMasked0.764maskV1.pt')
+elif version=='V3':
+    model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_97_rocNotMasked0.951_rocMasked0.766notmaskV3.pt')
+elif version=='V9':
+    model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_19_rocNotMasked0.918_rocMasked0.831notmaskV9.pt')
 print(model_path)
-if os.path.exists(model_path) and (version in model_path):
+if os.path.exists(model_pathi) and (version in model_pathi):
     if torch.cuda.is_available():
-        model_state = torch.load(model_path)
+        model_state = torch.load(model_pathi)
     else:
-        model_state = torch.load(model_path, map_location='cpu')
+        model_state = torch.load(model_pathi, map_location='cpu')
     model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
-    print('loaded %s' % model_path)
+    print('loaded %s' % model_pathi)
 else:
     print('不存在预训练模型！')
     sys.exit(0)
@@ -60,6 +67,7 @@ if torch.cuda.is_available():
     model.cuda()
 
 model.eval()
+print('开始测试验证集')
 with torch.no_grad(): # 不传梯度了
     distances, labels = [], []
     # progress_bar = enumerate(tqdm(NOTLFWestMask_dataloader))

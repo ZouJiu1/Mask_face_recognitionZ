@@ -2,7 +2,7 @@
 import sys
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 sys.path.append(os.getcwd())
 # 导入包
@@ -21,7 +21,7 @@ from validate_on_LFW import evaluate_lfw
 from config_notmask import config
 from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
     resnet152_cbam
-
+pwd = os.path.abspath('./')
 print("Using {} model architecture.".format(config['model']))
 start_epoch = 0
 
@@ -36,24 +36,23 @@ elif config['model'] == 101:
 elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
 
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
+model_path = os.path.join(pwd, 'Model_training_checkpoints')
 x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V3' in i]
 x.sort()
 for i in os.listdir(model_path):
     if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V3' in i):
-        model_path = os.path.join(model_path, i)
+        model_pathi = os.path.join(model_path, i)
         break
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_96_rocNotMasked0.952_rocMasked0.745notmaskV3.pt'
-
-if os.path.exists(model_path) and ('V3' in model_path):
-    model_state = torch.load(model_path)
+model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_97_rocNotMasked0.951_rocMasked0.766notmaskV3.pt')
+if os.path.exists(model_pathi) and ('V3' in model_pathi):
+    model_state = torch.load(model_pathi)
     model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
-    print('loaded %s' % model_path)
+    print('loaded %s' % model_pathi)
 else:
     print('不存在预训练模型！')
-
-start_epoch = 214
+if ('epoch_97' in model_pathi) and (start_epoch==216):
+    start_epoch = 97
 
 flag_train_gpu = torch.cuda.is_available()
 flag_train_multi_gpu = False

@@ -21,7 +21,7 @@ from config_mask import config
 # from Models.Attention_resnet_lossinforward import Resnet34_Triplet,ResNet,resnet18
 from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
     resnet152_cbam
-
+pwd = os.path.abspath('./')
 print("Using {} model architecture.".format(config['model']))
 start_epoch = 0
 
@@ -37,28 +37,35 @@ elif config['model'] == 152:
     model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
     # model  = resnet18(100)
 
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
+model_path = os.path.join(pwd, 'Model_training_checkpoints')
 x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V1' in i]
 x.sort()
 for i in os.listdir(model_path):
     if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V1' in i):
-        model_path = os.path.join(model_path, i)
+        model_pathi = os.path.join(model_path, i)
         break
-if os.path.exists(model_path) and ('V1' in model_path):
-    model_state = torch.load(model_path)
-    # model.load_state_dict(model_state['model_state_dict'])
+
+if os.path.exists(model_pathi) and ('V1' in model_pathi):
+    model_state = torch.load(model_pathi)
+    model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
-
-    now_state_dict = model.state_dict()
-    state_dict = {k: v for k, v in model_state.items() if (k in now_state_dict.keys()) and \
-                  ('fc.weight' not in now_state_dict.keys())}
-    now_state_dict.update(state_dict)
-    # now_state_dict.update(pretrained_state_dict)
-    model.load_state_dict(now_state_dict)
-
-    print('loaded %s' % model_path)
+    print('loaded %s' % model_pathi)
 else:
     print('不存在预训练模型！')
+
+# if os.path.exists(model_pathi) and ('V1' in model_pathi):
+#     model_state = torch.load(model_pathi)
+#     # model.load_state_dict(model_state['model_state_dict'])
+#     start_epoch = model_state['epoch']
+#     now_state_dict = model.state_dict()
+#     state_dict = {k: v for k, v in model_state.items() if (k in now_state_dict.keys()) and \
+#                   ('fc.weight' not in now_state_dict.keys())}
+#     now_state_dict.update(state_dict)
+#     # now_state_dict.update(pretrained_state_dict)
+#     model.load_state_dict(now_state_dict)
+#     print('loaded %s' % model_path)
+# else:
+#     print('不存在预训练模型！')
 
 flag_train_gpu = torch.cuda.is_available()
 flag_train_multi_gpu = False
