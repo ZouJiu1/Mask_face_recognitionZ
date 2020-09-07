@@ -14,9 +14,9 @@
 V1网络对应train_maskV1.py文件，V3网络对应train_notmaskV3.py文件，V9网络对应train_maskV9.py文件<br>
 
 ### 训练模型下载
-V1对应网络模型：
-V3对应网络模型：
-V9对应网络模型：
+V1对应网络模型：[https://share.weiyun.com/rwxg7wjK](https://share.weiyun.com/rwxg7wjK) <br>
+V3对应网络模型：[https://share.weiyun.com/dlB3la3P](https://share.weiyun.com/dlB3la3P) <br>
+V9对应网络模型：[https://share.weiyun.com/0dGsAUtO](https://share.weiyun.com/0dGsAUtO) <br>
 
 ### 下载相应数据
 生成一个Datasets文件夹，把VGGFace2的原始数据(VGGFace2_train文件)、LFW原始数据(lfw_funneled)、LFW配对文件(LFW_pairs.txt)，都放到Datasets文件夹，并解压，VGGface是用做训练集的，LFW是用做测试集的<br>
