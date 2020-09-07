@@ -117,9 +117,7 @@ class PyramidFeatures(nn.Module):
 
         P7_x = self.P7_1(P6_x)
         P7_x = self.P7_2(P7_x)
-
         return [P3_x, P4_x, P5_x, P6_x, P7_x]
-
 
 class RegressionModel(nn.Module):
     def __init__(self, num_features_in, num_anchors=9, feature_size=256):
@@ -223,13 +221,13 @@ class LevelAttentionModel(nn.Module):
         self.conv2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
         self.act2 = nn.ReLU()
 
-        self.conv3 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(feature_size, 1, kernel_size=3, padding=1)
         self.act3 = nn.ReLU()
 
-        self.conv4 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act4 = nn.ReLU()
-
-        self.conv5 = nn.Conv2d(feature_size, 1, kernel_size=3, padding=1)
+        # self.conv4 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
+        # self.act4 = nn.ReLU()
+        #
+        # self.conv5 = nn.Conv2d(feature_size, 1, kernel_size=3, padding=1)
 
         self.output_act = nn.Sigmoid()
 
@@ -241,14 +239,13 @@ class LevelAttentionModel(nn.Module):
         out = self.act2(out)
 
         out = self.conv3(out)
-        out = self.act3(out)
+        # out = self.act3(out)
 
-        out = self.conv4(out)
-        out = self.act4(out)
+        # out = self.conv4(out)
+        # out = self.act4(out)
 
-        out = self.conv5(out)
+        # out = self.conv5(out)
         out_attention = self.output_act(out)
-
         return out_attention
 
 class Attention_loss(nn.Module):
@@ -362,7 +359,6 @@ class Bottleneck(nn.Module):
 
         return out
 
-
 class ResNet(nn.Module):
 
     def __init__(self, block, layers, showlayer= False,  num_classes=128):
@@ -442,13 +438,15 @@ class ResNet(nn.Module):
         features = self.fpn([x2, x3, x4])
 
         #face_attention
-        # masks = mask.numpy()
-        # print(masks[masks==1])
+        # print(111111111111, np.unique(features[0].squeeze().detach().cpu().numpy()))
         attention = [self.levelattentionModel(feature) for feature in features]
+        features = [features[i] * torch.exp(attention[i]) for i in range(len(features))]
 
+        print('Face_attention: ', 'length: ',len(attention),' size: ', attention[0].size(), \
+              'unique value[0]: ', np.unique(attention[1].squeeze().detach().cpu().numpy()))
         if self.showlayer:
             i = 0
-            for level in attention:
+            for level in features:
                 i += 1
                 level = level.squeeze(0)
                 if torch.cuda.is_available():
@@ -456,19 +454,14 @@ class ResNet(nn.Module):
                 else:
                     level = np.array(255 * unnormalize(level).detach().numpy()).copy()
                 level = np.transpose(level, (1, 2, 0))
-                plt.imsave(os.path.join(pwd, 'Layer_show', 'fpnP%s'%(8-i)+'_V1'+ '.jpg'), level[:, :, 0])
-
-        features = [features[i] * torch.exp(attention[i]) for i in range(len(features))]
+                plt.imsave(os.path.join(pwd, 'Layer_show', 'fpnP%s' % (8 - i) + '_V1' + '.jpg'), level[:, :, 0])
+                # layers = level.shape[2]
+                # for ij in range(layers):
+                #     plt.imsave(os.path.join(pwd, 'Layer_show', 'fpnP%s' % (8 - i) + '_V1_%d'%ij + '.jpg'), level[:, :, ij])
 
         classification = torch.cat([self.classificationModel(feature).view((int(feature.size()[0]), -1)) for feature in features], dim=1)
         x = self.fc(classification)
-        x = self.last_bn(x)
-        x = torch.div(x, torch.norm(x))*50
-        # x = torch.cat([self.avgpool_1a(feature).view((int(feature.size()[0]), -1)) for feature in features], dim=1)
-        # x = self.dropout(x)
-        # x = self.last_linear(x)
         # x = self.last_bn(x)
-
         if self.training:
             mask_loss = self.levelattentionLoss(img.shape, attention, annotations)
             return x, mask_loss
@@ -479,8 +472,6 @@ class ResNet(nn.Module):
         # x = self.avgpool(x)
         # x = x.view(x.size(0), -1)
         # x = self.fc(x)
-
-        return x
 
 def resnet18_cbam(pretrained=True, **kwargs):
     """Constructs a ResNet-18 model.

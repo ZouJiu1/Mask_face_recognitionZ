@@ -46,8 +46,16 @@ for i in os.listdir(model_path):
         break
 if os.path.exists(model_path) and ('V1' in model_path):
     model_state = torch.load(model_path)
-    model.load_state_dict(model_state['model_state_dict'])
+    # model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
+
+    now_state_dict = model.state_dict()
+    state_dict = {k: v for k, v in model_state.items() if (k in now_state_dict.keys()) and \
+                  ('fc.weight' not in now_state_dict.keys())}
+    now_state_dict.update(state_dict)
+    # now_state_dict.update(pretrained_state_dict)
+    model.load_state_dict(now_state_dict)
+
     print('loaded %s' % model_path)
 else:
     print('不存在预训练模型！')
@@ -67,15 +75,15 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
 print("Using {} optimizer.".format(config['optimizer']))
 
 def adjust_learning_rate(optimizer, epoch):
-    if epoch<100:
+    if epoch<30:
         lr =  0.125
-    elif (epoch>=100) and (epoch<200):
+    elif (epoch>=30) and (epoch<80):
         lr = 0.0625
-    elif (epoch >= 200) and (epoch < 300):
+    elif (epoch >= 80) and (epoch < 120):
         lr = 0.0155
-    elif (epoch >= 300) and (epoch < 360):
+    elif (epoch >= 120) and (epoch < 160):
         lr = 0.003
-    elif (epoch>=360) and (epoch<390):
+    elif (epoch>=160) and (epoch<190):
         lr = 0.0001
     else:
         lr = 0.00006
@@ -160,6 +168,9 @@ for epoch in range(start_epoch, end_epoch):
         anc_embedding, anc_attention_loss = model((anc_img, position_anc))
         pos_embedding, pos_attention_loss = model((pos_img, position_pos))
         neg_embedding, neg_attention_loss = model((neg_img, position_neg))
+        # anc_embedding = torch.div(anc_embedding, torch.norm(anc_embedding)) * 50
+        # pos_embedding = torch.div(pos_embedding, torch.norm(pos_embedding)) * 50
+        # neg_embedding = torch.div(neg_embedding, torch.norm(neg_embedding)) * 50
         # print(99999999, anc_embedding.size())
         # 寻找困难样本
         # 计算embedding的L2
@@ -240,6 +251,8 @@ for epoch in range(start_epoch, end_epoch):
             data_b = data_b.cuda()
             label = label.cuda()
             output_a, output_b = model(data_a), model(data_b)
+            output_a = torch.div(output_a, torch.norm(output_a))
+            output_b = torch.div(output_b, torch.norm(output_b))
             distance = l2_distance.forward(output_a, output_b)
             # 列表里套矩阵
             labels.append(label.cpu().detach().numpy())
@@ -266,6 +279,8 @@ for epoch in range(start_epoch, end_epoch):
             data_b = data_b.cuda()
             label = label.cuda()
             output_a, output_b = model(data_a), model(data_b)
+            output_a = torch.div(output_a, torch.norm(output_a))
+            output_b = torch.div(output_b, torch.norm(output_b))
             distance = l2_distance.forward(output_a, output_b)
             # 列表里套矩阵
             labels.append(label.cpu().detach().numpy())
@@ -286,8 +301,8 @@ for epoch in range(start_epoch, end_epoch):
 
     # 打印并保存日志
     # 从之前的文件里读出来最好的roc和acc，并进行更新
-    if os.path.exists('logs/lfw_{}_log_tripletmaskV2.txt'.format(config['model'])):
-        with open('logs/lfw_{}_log_tripletmaskV2.txt'.format(config['model']), 'r') as f:
+    if os.path.exists('logs/lfw_{}_log_tripletmaskV1.txt'.format(config['model'])):
+        with open('logs/lfw_{}_log_tripletmaskV1.txt'.format(config['model']), 'r') as f:
             lines = f.readlines()
             my_line = lines[-3]
             my_line = my_line.split('\t')
@@ -347,7 +362,7 @@ for epoch in range(start_epoch, end_epoch):
     )
 
     # 保存日志文件
-    with open('logs/lfw_{}_log_tripletmaskV2.txt'.format(config['model']), 'a') as f:
+    with open('logs/lfw_{}_log_tripletmaskV1.txt'.format(config['model']), 'a') as f:
         val_list = [
             'epoch: ' + str(epoch + 1) + '\t',
             'train:\t',

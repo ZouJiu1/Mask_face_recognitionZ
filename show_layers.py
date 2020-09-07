@@ -82,7 +82,5 @@ def main():
         #     writer = csv.writer(csvfile)
         #     writer.writerows(x)
 
-
-
 if __name__ == '__main__':
     main()

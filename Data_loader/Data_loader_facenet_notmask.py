@@ -9,7 +9,7 @@ import torch
 from Data_loader.Data_loader_test_notmask import TestDataset
 from Data_loader.Data_loader_train_notmask import TrainDataset
 from config_notmask import config
-
+from Data_loader.Data_loadertest_mask import NOTLFWestNOTMaskDataset
 # 训练数据的变换
 train_data_transforms = transforms.Compose([
     # transforms.Resize([config['image_size'], config['image_size']]), # resize
@@ -62,4 +62,18 @@ test_dataloader = torch.utils.data.DataLoader(
     shuffle=False
 )
 
+# # 非LFW不戴口罩测试数据生成器
+NOTLFWestNOTMask_dataloader = torch.utils.data.DataLoader(
+    dataset = NOTLFWestNOTMaskDataset(
+        dir=config['LFW_data_path'],
+        pairs_path=config['LFW_pairs'],
+        predicter_path=config['predicter_path'],
+        img_size=config['image_size'],
+        transform=test_data_transforms,
+        test_pairs_paths=config['test_pairs_paths']
+    ),
+    batch_size=config['test_batch_size'],
+    num_workers=config['num_workers'],
+    shuffle=False
+)
 

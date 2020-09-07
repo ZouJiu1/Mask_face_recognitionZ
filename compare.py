@@ -12,13 +12,16 @@ from config_mask import config
 import torchvision.transforms as transforms
 from torch.nn.modules.distance import PairwiseDistance
 pwd = os.path.abspath(__file__+'../../')
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
-version = 'V3'
-mask = True #是否给人脸戴口罩
+version = 'V9'
+mask = True  #是否给人脸戴口罩
 
-if version=='V1':
+if version=='V1' or version=='V6':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
+        resnet152_cbam
+elif version=='V2':
+    from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
 elif (version=='V3') or (version=='V9'):
     from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
@@ -35,10 +38,16 @@ elif config['model'] == 101:
 elif config['model'] == 152:
     model = resnet152_cbam(pretrained=False, showlayer= True, num_classes=128)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_16_rocNMD0.870_rocMasked0.635notmaskV3.pt'
-# model_path = r'C:\Users\EDZ\Desktop\projects\masked_face\Mask_face_recognitionZ\Model_training_checkpoints\model_34_triplet_epoch_5_rocNMD0.715_rocMasked0.629maskV1.pt'
-# model_path = r'C:\Users\EDZ\Desktop\projects\masked_face\Mask_face_recognitionZ\Model_training_checkpoints\model_34_triplet_epoch_7_rocNMD0.802_rocMasked0.617maskV2.pt'
-# model_path = r'C:\Users\EDZ\Desktop\projects\masked_face\Mask_face_recognitionZ\Model_training_checkpoints\model_34_triplet_epoch_5_rocNMD0.842_rocMasked0.655notmaskV3.pt'
+
+model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
+x = [int(i.split('_')[4]) for i in os.listdir(model_path) if version in i]
+x.sort()
+for i in os.listdir(model_path):
+    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and (version in i):
+        model_path = os.path.join(model_path, i)
+        break
+model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_146_rocNotMasked0.909_rocMasked0.819notmaskV9.pt'
+print(model_path)
 if os.path.exists(model_path) and (version in model_path):
     if torch.cuda.is_available():
         model_state = torch.load(model_path)
@@ -55,6 +64,7 @@ if torch.cuda.is_available():
     model.cuda()
 
 model.eval()
+
 test_data_transforms = transforms.Compose([
     transforms.Resize([config['image_size'], config['image_size']]), # resize
     transforms.ToTensor(),
@@ -65,6 +75,7 @@ test_data_transforms = transforms.Compose([
 ])
 
 img1_path = os.path.join(pwd, 'Layer_show', 'George_W_Bush_0001.jpg')
+# img1_path = os.path.join(pwd, 'Layer_show', 'Michael_Douglas_0003.jpg')
 img2_path = os.path.join(pwd, 'Layer_show', 'George_W_Bush_0003.jpg')
 isame = 1
 threshold = 0.9
@@ -73,6 +84,17 @@ predicter_path=config['predicter_path']
 predictor = dlib.shape_predictor(predicter_path)
 img_size = config['image_size']
 font = cv2.FONT_HERSHEY_SIMPLEX
+
+masked = os.path.join(pwd, 'Layer_show', 'mask')
+notmasked = os.path.join(pwd, 'Layer_show', 'notmask')
+
+delete = input('是否删除文件？ Y or N')
+if (delete.upper()=='Y') and (mask==True):
+    os.system('rm -rf %s'%masked)
+    os.mkdir(masked)
+elif (delete.upper()=='Y') and (mask==False):
+    os.system('rm -rf %s'%notmasked)
+    os.mkdir(notmasked)
 
 def preprocess(image_path, detector, predictor, img_size, cl, mask=True):
     image = dlib.load_rgb_image(image_path)
@@ -154,6 +176,8 @@ else:
 imgall=ishowm(ima_, imb_)
 
 output_a, output_b = model(data_a), model(data_b)
+output_a = torch.div(output_a, torch.norm(output_a))
+output_b = torch.div(output_b, torch.norm(output_b))
 l2_distance = PairwiseDistance(2)#.cuda()
 distance = l2_distance.forward(output_a, output_b)
 print('从两张图片提取出来的特征向量的欧氏距离是：%1.3f' % distance)

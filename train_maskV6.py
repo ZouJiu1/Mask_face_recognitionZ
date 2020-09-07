@@ -2,7 +2,7 @@
 import sys
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 sys.path.append(os.getcwd())
 # 导入包
@@ -14,12 +14,12 @@ import torch
 import time
 # 导入文件
 # from Models.Model_for_facenet import model, optimizer_model, start_epoch, flag_train_multi_gpu
-from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader,LFWestMask_dataloader
+from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader, LFWestMask_dataloader
 from Losses.Triplet_loss import TripletLoss
 from validate_on_LFW import evaluate_lfw
 from config_mask import config
 # from Models.Attention_resnet_lossinforward import Resnet34_Triplet,ResNet,resnet18
-from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
+from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
     resnet152_cbam
 
 print("Using {} model architecture.".format(config['model']))
@@ -38,16 +38,23 @@ elif config['model'] == 152:
     # model  = resnet18(100)
 
 model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
-x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V2' in i]
+x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V6' in i]
 x.sort()
 for i in os.listdir(model_path):
-    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V2' in i):
+    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V6' in i):
         model_path = os.path.join(model_path, i)
         break
-if os.path.exists(model_path) and ('V2' in model_path):
+if os.path.exists(model_path) and ('V6' in model_path):
     model_state = torch.load(model_path)
-    model.load_state_dict(model_state['model_state_dict'])
+    # model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
+
+    now_state_dict = model.state_dict()
+    state_dict = {k: v for k, v in model_state.items() if (k in now_state_dict.keys()) and \
+                  ('fc.weight' not in now_state_dict.keys())}
+    now_state_dict.update(state_dict)
+    # now_state_dict.update(pretrained_state_dict)
+    model.load_state_dict(now_state_dict)
     print('loaded %s' % model_path)
 else:
     print('不存在预训练模型！')
@@ -63,16 +70,19 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
     model.cuda()
     print('Using single-gpu training.')
 
+# optimizer
+print("Using {} optimizer.".format(config['optimizer']))
+
 def adjust_learning_rate(optimizer, epoch):
-    if epoch<100:
+    if epoch<14:
         lr =  0.125
-    elif (epoch>=100) and (epoch<200):
+    elif (epoch>=14) and (epoch<60):
         lr = 0.0625
-    elif (epoch >= 200) and (epoch < 300):
+    elif (epoch >= 60) and (epoch < 90):
         lr = 0.0155
-    elif (epoch >= 300) and (epoch < 360):
+    elif (epoch >= 90) and (epoch < 120):
         lr = 0.003
-    elif (epoch>=360) and (epoch<390):
+    elif (epoch>=120) and (epoch < 160):
         lr = 0.0001
     else:
         lr = 0.00006
@@ -254,8 +264,8 @@ for epoch in range(start_epoch, end_epoch):
             distances=distances,
             labels=labels,
             epoch = 'epoch_'+str(epoch),
-            tag = 'NOTMaskedLFW_aucnotmask',
-            version = 'V2',
+            tag = 'NOTMaskedLFW_auc',
+            version = 'V6',
             pltshow=True
         )
     print("Validating on LFWMASKTestDataset! ...")
@@ -283,15 +293,15 @@ for epoch in range(start_epoch, end_epoch):
             distances=distances,
             labels=labels,
             epoch = 'epoch_'+str(epoch),
-            tag = 'MaskedLFW_aucmask',
-            version = 'V2',
+            tag = 'MaskedLFW_auc',
+            version = 'V6',
             pltshow=True
         )
 
     # 打印并保存日志
     # 从之前的文件里读出来最好的roc和acc，并进行更新
-    if os.path.exists('logs/lfw_{}_log_tripletmaskV1.txt'.format(config['model'])):
-        with open('logs/lfw_{}_log_tripletmaskV1.txt'.format(config['model']), 'r') as f:
+    if os.path.exists('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model'])):
+        with open('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model']), 'r') as f:
             lines = f.readlines()
             my_line = lines[-3]
             my_line = my_line.split('\t')
@@ -311,10 +321,10 @@ for epoch in range(start_epoch, end_epoch):
         save = True
     print('save: ', save)
 
-    # 打印日志内容
+    # 打印不戴口罩日志内容
     print('Epoch {}:\n \
-           train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
-           test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
+               train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
+               NOTMASK_LFW_test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
         epoch + 1,
         avg_loss,
         avg_triplet_loss,
@@ -332,8 +342,8 @@ for epoch in range(start_epoch, end_epoch):
     )
     # 打印戴口罩日志内容
     print('Epoch {}:\n \
-                   train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
-                   MASKED_LFW_test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
+               train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
+               MASKED_LFW_test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
         epoch + 1,
         avg_loss,
         avg_triplet_loss,
@@ -349,8 +359,9 @@ for epoch in range(start_epoch, end_epoch):
         np.std(precision_mask),
     )
     )
+
     # 保存日志文件
-    with open('logs/lfw_{}_log_tripletmaskV1.txt'.format(config['model']), 'a') as f:
+    with open('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model']), 'a') as f:
         val_list = [
             'epoch: ' + str(epoch + 1) + '\t',
             'train:\t',
@@ -370,8 +381,7 @@ for epoch in range(start_epoch, end_epoch):
             'acc_MD: ' + str('%.3f' % np.mean(accuracy_mask)) + '+-' + str('%.3f' % np.std(accuracy_mask)) + '\t',
             'best_acc_MD: ' + str('%.3f' % best_accuracy) + '\t',
             'recall_MD: ' + str('%.3f' % np.mean(recall_mask)) + '+-' + str('%.3f' % np.std(recall_mask)) + '\t',
-            'precision_MD: ' + str('%.3f' % np.mean(precision_mask)) + '+-' + str(
-                '%.3f' % np.std(precision_mask)) + '\t',
+            'precision_MD: ' + str('%.3f' % np.mean(precision_mask)) + '+-' + str('%.3f' % np.std(precision_mask)) + '\t',
             'best_distances_MD: ' + str('%.3f' % np.mean(best_distances_mask)) + '+-' + str(
                 '%.3f' % np.std(best_distances_mask)) + '\t',
             'tar_m: ' + str('%.3f' % np.mean(tar_mask)) + '\t',
@@ -422,9 +432,9 @@ for epoch in range(start_epoch, end_epoch):
         # if flag_validate_lfw:
         # state['best_distance_threshold'] = np.mean(best_distances)
         #
-        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNotMasked{:.3f}_rocMasked{:.3f}maskV2.pt'.format(config['model'],
+        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNotMasked{:.3f}_rocMasked{:.3f}maskV6.pt'.format(config['model'],
                                                                                                      epoch + 1,
-                                                                                                     roc_auc,roc_auc_mask))
+                                                                                                     roc_auc, roc_auc_mask))
 # Training loop end
 total_time_end = time.time()
 total_time_elapsed = total_time_end - total_time_start

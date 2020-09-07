@@ -45,6 +45,7 @@ for i in os.listdir(model_path):
     if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V9' in i):
         model_path = os.path.join(model_path, i)
         break
+model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints/model_34_triplet_epoch_19_rocNotMasked0.918_rocMasked0.831notmaskV9.pt'
 if os.path.exists(model_path) and ('V9' in model_path):
     model_state = torch.load(model_path)
     model.load_state_dict(model_state['model_state_dict'])
@@ -52,7 +53,7 @@ if os.path.exists(model_path) and ('V9' in model_path):
     print('loaded %s' % model_path)
 else:
     print('不存在预训练模型！')
-
+start_epoch = 148
 flag_train_gpu = torch.cuda.is_available()
 flag_train_multi_gpu = False
 if flag_train_gpu and torch.cuda.device_count() > 1:
@@ -65,15 +66,15 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
     print('Using single-gpu training.')
 
 def adjust_learning_rate(optimizer, epoch):
-    if epoch<100:
+    if epoch<19:
         lr =  0.125
-    elif (epoch>=100) and (epoch<200):
+    elif (epoch>=19) and (epoch<180):
         lr = 0.0625
-    elif (epoch >= 200) and (epoch < 300):
+    elif (epoch >= 180) and (epoch < 220):
         lr = 0.0155
-    elif (epoch >= 300) and (epoch < 360):
+    elif (epoch >= 220) and (epoch < 250):
         lr = 0.003
-    elif (epoch>=360) and (epoch<390):
+    elif (epoch>=250) and (epoch<300):
         lr = 0.0001
     else:
         lr = 0.00006
@@ -158,6 +159,9 @@ for epoch in range(start_epoch, end_epoch):
         anc_embedding, anc_attention_loss = model((anc_img, mask_anc))
         pos_embedding, pos_attention_loss = model((pos_img, mask_pos))
         neg_embedding, neg_attention_loss = model((neg_img, mask_neg))
+        anc_embedding = torch.div(anc_embedding, torch.norm(anc_embedding)) * 50
+        pos_embedding = torch.div(pos_embedding, torch.norm(pos_embedding)) * 50
+        neg_embedding = torch.div(neg_embedding, torch.norm(neg_embedding)) * 50
         # 寻找困难样本
         # 计算embedding的L2
         pos_dist = l2_distance.forward(anc_embedding, pos_embedding)
@@ -238,6 +242,8 @@ for epoch in range(start_epoch, end_epoch):
             data_b = data_b.cuda()
             label = label.cuda()
             output_a, output_b = model(data_a), model(data_b)
+            output_a = torch.div(output_a, torch.norm(output_a))
+            output_b = torch.div(output_b, torch.norm(output_b))
             distance = l2_distance.forward(output_a, output_b)
             # 列表里套矩阵
             labels.append(label.cpu().detach().numpy())
@@ -264,6 +270,8 @@ for epoch in range(start_epoch, end_epoch):
             data_b = data_b.cuda()
             label = label.cuda()
             output_a, output_b = model(data_a), model(data_b)
+            output_a = torch.div(output_a, torch.norm(output_a))
+            output_b = torch.div(output_b, torch.norm(output_b))
             distance = l2_distance.forward(output_a, output_b)
             # 列表里套矩阵
             labels.append(label.cpu().detach().numpy())

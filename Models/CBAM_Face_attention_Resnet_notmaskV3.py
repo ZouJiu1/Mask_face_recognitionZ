@@ -6,6 +6,7 @@ from Losses.Mask_bce_loss import Attention_loss
 import numpy as np
 from Losses.Mask_bce_loss import UnNormalizer
 import matplotlib.pyplot as plt
+import cv2
 import os
 unnormalize = UnNormalizer()
 pwd = os.path.abspath(__file__+'../../../')
@@ -88,7 +89,6 @@ class FACEAttention(nn.Module):
         out = self.conv3(out)
 
         out = self.sigmoid(out)
-
         return out
 
 class BasicBlock(nn.Module):
@@ -244,17 +244,22 @@ class ResNet(nn.Module):
             for level in [x]:
                 i += 1
                 level = level.squeeze(0)
+                # levelnpy = level.detach().cpu().numpy()
                 if torch.cuda.is_available():
                     level = np.array(255 * unnormalize(level).detach().cpu().numpy()).copy()
                 else:
                     level = np.array(255 * unnormalize(level).detach().numpy()).copy()
                 level = np.transpose(level, (1, 2, 0))
-                plt.imsave(os.path.join(pwd, 'Layer_show', 'V3'+ '.jpg'), level[:,:,0])
+                version = input('输入版本号：V3、V9')
+                version = version.upper()
+                layers = level.shape[2]
+                plt.imsave(os.path.join(pwd, 'Layer_show', version + '.jpg'), level[:, :, 0])
+                # for ij in range(layers):
+                #     plt.imsave(os.path.join(pwd, 'Layer_show', version+ '_layer%s.jpg'%ij), level[:, :, ij])
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
-        # print(11111111111, x.size())
         x = self.fc(x)
-        x = torch.div(x, torch.norm(x))*50
+        # x = torch.div(x, torch.norm(x))*50
         if self.training:
             return x, loss
         else:
