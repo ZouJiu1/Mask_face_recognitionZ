@@ -101,7 +101,7 @@ python compare.py
 ### 同一个人特征图可视化结果
 这一张图片是由两张图片拼成的，是compart.py的输入图片，保存的特征图是img2_path这张图片的，也就是右边的这张图片，这里给出带口罩的和不戴口罩的测试拼接图片<br> 
 图片里面的文字，dis:*代表两张人脸的特征向量的欧氏距离，有lay标记的是输出特征图的人脸<br>
-V9网络戴口罩测试的结果 &emsp;&emsp;&emsp; V9网络不戴口罩测试的结果<br>
+V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; V9网络不戴口罩测试的结果<br>
 <img src="Layer_show/mask/dis0.069_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.067_faceshow_V9.jpg" width="39%" /><br>
 <br>
 戴口罩的测试图片通过V1网络FPN层的P5层特征图可视化mask/fpnP5_V2.jpg、以及通过V1网络FPN层的P6层特征图可视化mask/fpnP6_V2.jpg<br>
@@ -117,7 +117,7 @@ V9网络戴口罩测试的结果 &emsp;&emsp;&emsp; V9网络不戴口罩测试�
 <i></i>
 
 ### V9网络不同人向量距离结果
-V9网络戴口罩测试的结果                                                        V9网络不戴口罩测试的结果<br>
+V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; V9网络不戴口罩测试的结果<br>
 <img src="Layer_show/mask/dis0.237_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.267_faceshow_V9.jpg" width="39%" /><br>
 
 ### 使用LFW数据集验证测试集AUC结果
