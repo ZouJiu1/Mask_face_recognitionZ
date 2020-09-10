@@ -9,18 +9,9 @@ LFW数据集下载的链接是[https://share.weiyun.com/qHg5TcPP](https://share.
 口罩人脸数据：Real-World-Masked-Face-Dataset，链接：https://github.com/X-zhangyang/Real-World-Masked-Face-Dataset，项目中暂时没用到可以不管<br>   
 ### 模型
 以标准人脸识别模型[FaceNet](https://arxiv.org/abs/1503.03832) 为主线，添加fpn_face_attention结构，增加CBAM模块，使其能更好的聚焦于人脸上半部，没带口罩的区域<br>
-这里提供了三个版本的模型，一个是输入为戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件的模型V1<br>
-一个是输入为没带口罩人脸图片和口罩以上人脸mask图片的模型V3，最后一个是输入为戴口罩人脸和口罩以上人脸mask图片的模型V9<br>
-都使用mask图片的模型V3和V9的区别仅在于输入人脸图片有没有戴口罩，网络和损失函数都相同，所有网络采用的基础网络都是Resnet34<br>
-V1网络对应train_maskV1.py文件，V3网络对应train_notmaskV3.py文件，V9网络对应train_maskV9.py文件
-V6是基准网络，没有采用任何attention机制，输入图片数据和V9相同都是戴口罩的人脸<br>
-V2网络和V9网络的输入数据相同，网络结构只有face_attention提取层不同<br>
-V8网络和V6网络的区别在于，V8在V2的基础上添加了更改以后的face_attention
-V1：resnet34+CBAM+Face_attention，戴口罩人脸+口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件<br>
-V2
 
-有几个版本的face_attention提取层，表格里面的FA_*，代表face_attention版本号，V6是基准网络只有Resnet34没加任何其他网络结构，输入只有戴口罩人脸，
-
+有几个版本的face_attention提取层，表格里面的FA_*，代表face_attention版本号，V6是基准网络只有Resnet34没加任何其他网络结构，输入只有戴口罩人脸<br>
+AUC的结果是运行validation_LFW.py文件得到的
 
 | 版本号 | 网络 | CBAM | FA_1 | FA_Y | FA_2 | 输入人脸戴口罩 | 输入mask图片或矩形框坐标 | 戴口罩LFW测试AUC | 不戴口罩LFW测试AUC |
 | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
@@ -64,7 +55,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 
 ###### 生成结果展示
 这里生成不戴口罩的人脸图片以及口罩区域以上人脸的mask图片<br>
-<img src="Datasets/vggface2_train_face_notmask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_notmask/n009261/0001_01.jpg" width="39%" />
+<img src="Datasets/vggface2_train_face_notmask/n009271/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_notmask/n009271/0001_01.jpg" width="39%" />
 <i></i>
 
 ### 戴口罩数据预处理
@@ -77,7 +68,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 
 ###### 生成结果展示
 生成戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件<br>
-<img src="Datasets/vggface2_train_face_mask/n009261/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_mask/n009261/0001_01.jpg" width="39%" />
+<img src="Datasets/vggface2_train_face_mask/n009271/0001_01.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_mask/n009271/0001_01.jpg" width="39%" />
 <i></i>
 
 ##### 设置notmasked=True；masked=True，则会同时生成带口罩的和不戴口罩的，V9模型需要这样设置，因为V9模型需要戴口罩人脸和以及口罩区域以上人脸的mask图片
