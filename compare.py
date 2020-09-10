@@ -12,17 +12,21 @@ from config_mask import config
 import torchvision.transforms as transforms
 from torch.nn.modules.distance import PairwiseDistance
 pwd = os.path.abspath(__file__+'../../')
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 pwd = os.path.abspath('./')
-version = 'V9'
-mask = False  #是否给人脸戴口罩
+version = 'V8'
+mask = True  #是否给人脸戴口罩
 
-if version=='V1' or version=='V6':
+if version=='V1':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
+elif version=='V6':
+    from Models.Resnet34 import resnet34 as resnet34_cbam
 elif version=='V2':
     from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
+elif version=='V8':
+    from Models.Resnet34_attention import resnet34 as resnet34_cbam
 elif (version=='V3') or (version=='V9'):
     from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam

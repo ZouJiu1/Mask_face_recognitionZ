@@ -1,25 +1,20 @@
-#encoding = utf-8
-import sys
-import os
 import torch
 import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
-from Losses.Mask_bce_loss import Attention_loss, LevelAttention_loss
+from Losses.Mask_bce_loss import Attention_loss
 import numpy as np
-import cv2
-import torch.nn.functional as F
-from config_mask import config
 from Losses.Mask_bce_loss import UnNormalizer
-import matplotlib.pyplot as plt
 unnormalize = UnNormalizer()
+import matplotlib.pyplot as plt
+import cv2
+import os
 
 pwd = os.path.abspath(__file__+'../../../')
 
-sys.path.append(os.getcwd())
-
 __all__ = ['ResNet', 'resnet18_cbam', 'resnet34_cbam', 'resnet50_cbam', 'resnet101_cbam',
            'resnet152_cbam']
+
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -70,212 +65,66 @@ class SpatialAttention(nn.Module):
         x = self.conv1(x)
         return self.sigmoid(x)
 
-class PyramidFeatures(nn.Module):
-    def __init__(self, C3_size, C4_size, C5_size, feature_size=256):
-        super(PyramidFeatures, self).__init__()
 
-        # upsample C5 to get P5 from the FPN paper
-        self.P5_1 = nn.Conv2d(C5_size, feature_size, kernel_size=1, stride=1, padding=0)
-        self.P5_upsampled = nn.Upsample(scale_factor=2, mode='nearest')
-        self.P5_2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, stride=1, padding=1)
+class FACEAttention(nn.Module):
+    def __init__(self, channel_in, channel_size):
+        super(FACEAttention, self).__init__()
 
-        # add P5 elementwise to C4
-        self.P4_1 = nn.Conv2d(C4_size, feature_size, kernel_size=1, stride=1, padding=0)
-        self.P4_upsampled = nn.Upsample(scale_factor=2, mode='nearest')
-        self.P4_2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(channel_in, channel_size, kernel_size=3, padding=1)
+        self.relu1 = nn.ReLU()
+        self.bn1 = nn.BatchNorm2d(channel_size)
 
-        # add P4 elementwise to C3
-        self.P3_1 = nn.Conv2d(C3_size, feature_size, kernel_size=1, stride=1, padding=0)
-        self.P3_2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(channel_size, channel_size, kernel_size=3, padding=1)
+        self.relu2 = nn.ReLU()
+        self.bn2 = nn.BatchNorm2d(channel_size)
 
-        # "P6 is obtained via a 3x3 stride-2 conv on C5"
-        self.P6 = nn.Conv2d(C5_size, feature_size, kernel_size=3, stride=2, padding=1)
-
-        # "P7 is computed by applying ReLU followed by a 3x3 stride-2 conv on P6"
-        self.P7_1 = nn.ReLU()
-        self.P7_2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, stride=2, padding=1)
-
-    def forward(self, inputs):
-        C3, C4, C5 = inputs
-
-        P5_x = self.P5_1(C5)
-        P5_upsampled_x = self.P5_upsampled(P5_x)
-        P5_x = self.P5_2(P5_x)
-
-        P4_x = self.P4_1(C4)
-
-        P4_x = P5_upsampled_x + P4_x
-        P4_upsampled_x = self.P4_upsampled(P4_x)
-        P4_x = self.P4_2(P4_x)
-
-        P3_x = self.P3_1(C3)
-        P3_x = P3_x + P4_upsampled_x
-        P3_x = self.P3_2(P3_x)
-
-        P6_x = self.P6(C5)
-
-        P7_x = self.P7_1(P6_x)
-        P7_x = self.P7_2(P7_x)
-
-        return [P3_x, P4_x, P5_x, P6_x, P7_x]
-
-
-class RegressionModel(nn.Module):
-    def __init__(self, num_features_in, num_anchors=9, feature_size=256):
-        super(RegressionModel, self).__init__()
-
-        self.conv1 = nn.Conv2d(num_features_in, feature_size, kernel_size=3, padding=1)
-        self.act1 = nn.ReLU()
-
-        self.conv2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act2 = nn.ReLU()
-
-        self.conv3 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act3 = nn.ReLU()
-
-        self.conv4 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act4 = nn.ReLU()
-
-        self.output = nn.Conv2d(feature_size, num_anchors * 4, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(channel_size, 1, kernel_size=3, padding=1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         out = self.conv1(x)
-        out = self.act1(out)
-
+        out = self.relu1(out)
+        out = self.bn1(out)
         out = self.conv2(out)
-        out = self.act2(out)
-
+        out = self.relu2(out)
+        out = self.bn2(out)
         out = self.conv3(out)
-        out = self.act3(out)
 
-        out = self.conv4(out)
-        out = self.act4(out)
-
-        out = self.output(out)
-
-        # out is B x C x W x H, with C = 4*num_anchors
-        out = out.permute(0, 2, 3, 1)
-
-        return out.contiguous().view(out.shape[0], -1, 4)
-
-
-class ClassificationModel(nn.Module):
-    def __init__(self, num_features_in, num_anchors=9, num_classes=80, prior=0.01, feature_size=256):
-        super(ClassificationModel, self).__init__()
-
-        self.num_classes = num_classes
-        self.num_anchors = num_anchors
-
-        self.conv1 = nn.Conv2d(num_features_in, feature_size, kernel_size=3, padding=1)
-        self.act1 = nn.ReLU()
-
-        self.conv2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act2 = nn.ReLU()
-
-        self.conv3 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act3 = nn.ReLU()
-
-        self.conv4 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act4 = nn.ReLU()
-
-        self.output = nn.Conv2d(feature_size, num_anchors*num_classes, kernel_size=3, padding=1)
-        self.output_act = nn.ReLU()
-        self.dropout = nn.Dropout(0.8)
-        self.avgpool_1a = nn.AdaptiveAvgPool2d(1)
-
-    def forward(self, x):
-        out = self.conv1(x)
-        out = self.act1(out)
-
-        out = self.conv2(out)
-        out = self.act2(out)
-
-        out = self.conv3(out)
-        out = self.act3(out)
-
-        out = self.conv4(out)
-        out = self.act4(out)
-
-        out = self.output(out)
-        out = self.output_act(out)
-        out = self.avgpool_1a(out)
-        out = self.dropout(out)
-
-        # out is B x C x W x H, with C = n_classes + n_anchors
-        out1 = out.permute(0, 2, 3, 1)
-
-        batch_size, width, height, channels = out1.shape
-        # print(000000000,out.view(batch_size, -1).size())
-        out2 = out1.view(batch_size, width, height, self.num_anchors, self.num_classes)
-
-        return out2.contiguous().view(x.shape[0], -1, self.num_classes)
-
-
-class LevelAttentionModel(nn.Module):
-
-    def __init__(self, num_features_in, feature_size=256):
-        super(LevelAttentionModel, self).__init__()
-
-        self.conv1 = nn.Conv2d(num_features_in, feature_size, kernel_size=3, padding=1)
-        self.act1 = nn.ReLU()
-
-        self.conv2 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act2 = nn.ReLU()
-
-        self.conv3 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act3 = nn.ReLU()
-
-        self.conv4 = nn.Conv2d(feature_size, feature_size, kernel_size=3, padding=1)
-        self.act4 = nn.ReLU()
-
-        self.conv5 = nn.Conv2d(feature_size, 1, kernel_size=3, padding=1)
-
-        self.output_act = nn.Sigmoid()
-
-    def forward(self, x):
-        out = self.conv1(x)
-        out = self.act1(out)
-
-        out = self.conv2(out)
-        out = self.act2(out)
-
-        out = self.conv3(out)
-        out = self.act3(out)
-
-        out = self.conv4(out)
-        out = self.act4(out)
-
-        out = self.conv5(out)
-        out_attention = self.output_act(out)
-
-        return out_attention
-
-class Attention_loss(nn.Module):
-    def forward(self, hot_map, mask):
-        Loss = list()
-
-        for one_hot_map, one_mask in zip(hot_map, mask):
-
-            shape = one_hot_map.shape[2]
-
-            one_mask = one_mask.cpu()
-            one_mask = np.array(one_mask)/255
-            # print(one_mask.shape)
-            # one_mask = np.transpose(one_mask, (1, 2, 0))
-            # one_mask = cv2.cvtColor(one_mask, cv2.COLOR_RGB2GRAY)
-            one_mask = cv2.resize(one_mask, (shape, shape))
-            one_mask = one_mask[np.newaxis, :]
-            # print(one_mask.shape)
-
-            one_mask = torch.from_numpy(one_mask)
-            one_mask = one_mask.cuda().float()
-
-            one_loss = F.binary_cross_entropy(one_hot_map, one_mask)
-            Loss.append(one_loss)
-
-        Loss = np.array(Loss, dtype=np.float64)
-        Loss = torch.from_numpy(Loss)
-        return Loss
+        # w = list(np.unique(out.detach().cpu().numpy()))
+        # w.sort()
+        # print('outoutout5: ', out.size(), w)
+        out = self.sigmoid(out)
+        # w = list(np.unique(out.detach().cpu().numpy()))
+        # w.sort()
+        # print('outoutout6: ', out.size(), w[:3], w[-3:],w)
+        return out
+    # def __init__(self, channel_in, channel_size):
+    #     super(FACEAttention, self).__init__()
+    #     # self.conv1 = nn.Conv2d(channel_in+2, 1, kernel_size=3, padding=1,bias=False)
+    #     self.conv1 = nn.Conv2d(channel_in+2, channel_in, kernel_size=3, padding=1,bias=False)
+    #     self.conv2 = nn.Conv2d(channel_in, 1, kernel_size=3, padding=1,bias=False)
+    #     self.relu1 = nn.ReLU()
+    #     self.bn1 = nn.BatchNorm2d(channel_in)
+    #
+    #     self.sigmoid = nn.Sigmoid()
+    #
+    # def forward(self, x):
+    #     avg_out = torch.mean(x, dim=1, keepdim=True)
+    #     max_out, _ = torch.max(x, dim=1, keepdim=True)
+    #     # x = self.bn1(x)
+    #     x = torch.cat([avg_out, max_out, x], dim=1)
+    #     out = self.conv1(x)
+    #     out = self.bn1(out)
+    #     # out = self.relu1(out)
+    #     out = self.conv2(out)
+    #     w = list(np.unique(out.detach().cpu().numpy()))
+    #     w.sort()
+    #     print('outoutout5: ', out.size(), w)
+    #     out = self.sigmoid(out)
+    #     w = list(np.unique(out.detach().cpu().numpy()))
+    #     w.sort()
+    #     print('outoutout6: ', out.size(), w[:3], w[-3:])
+    #     return out
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -378,25 +227,9 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
         self.avgpool = nn.AvgPool2d(7, stride=1)
-        self.fc = nn.Linear(5760, 128, bias=False)
-        self.levelattentionLoss = LevelAttention_loss()
+        self.Fa = FACEAttention(512, 512)
+        self.fc = nn.Linear(2048, num_classes)
         self.aloss = Attention_loss()
-        if block == BasicBlock:
-            fpn_sizes = [self.layer2[layers[1] - 1].conv2.out_channels, self.layer3[layers[2] - 1].conv2.out_channels,
-                         self.layer4[layers[3] - 1].conv2.out_channels]
-        elif block == Bottleneck:
-            fpn_sizes = [self.layer2[layers[1] - 1].conv3.out_channels, self.layer3[layers[2] - 1].conv3.out_channels,
-                         self.layer4[layers[3] - 1].conv3.out_channels]
-        self.fpn = PyramidFeatures(fpn_sizes[0], fpn_sizes[1], fpn_sizes[2])
-
-        self.regressionModel = RegressionModel(256)
-        self.classificationModel = ClassificationModel(256, num_classes=num_classes)
-        self.levelattentionModel = LevelAttentionModel(256)
-        self.last_bn = nn.BatchNorm1d(128, eps=0.001, momentum=0.1, affine=True)
-        self.dropout = nn.Dropout(0.8)
-
-        self.avgpool_1a = nn.AdaptiveAvgPool2d(1)
-        self.last_linear = nn.Linear(1280, 128, bias=False)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -425,8 +258,7 @@ class ResNet(nn.Module):
 
     def forward(self, inputs):
         if self.training:
-            img, annotations = inputs
-            annotations.unsqueeze_(1)
+            img, mask = inputs
         else:
             img = inputs
         x = self.conv1(img)
@@ -434,50 +266,43 @@ class ResNet(nn.Module):
         x = self.relu(x)
         x = self.maxpool(x)
 
-        x1 = self.layer1(x)
-        x2 = self.layer2(x1)
-        x3 = self.layer3(x2)
-        x4 = self.layer4(x3)
-        features = self.fpn([x2, x3, x4])
-
-        #face_attention
-        # masks = mask.numpy()
-        # print(masks[masks==1])
-        attention = [self.levelattentionModel(feature) for feature in features]
-        features = [features[i] * torch.exp(attention[i]) for i in range(len(features))]
-
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        # W=list(np.unique(x.detach().cpu().numpy()))
+        # W.sort()
+        # print(111111, x.size(), W)
+        xs = self.Fa(x)
+        if self.training:
+            loss = self.aloss(xs, mask)
+        x = x * torch.exp(xs)
+        tmp = torch.exp(xs)
         if self.showlayer:
             i = 0
-            for level in features:
+            for level in [x]:
                 i += 1
                 level = level.squeeze(0)
+                # levelnpy = level.detach().cpu().numpy()
                 if torch.cuda.is_available():
                     level = np.array(255 * unnormalize(level).detach().cpu().numpy()).copy()
                 else:
                     level = np.array(255 * unnormalize(level).detach().numpy()).copy()
                 level = np.transpose(level, (1, 2, 0))
-                plt.imsave(os.path.join(pwd, 'Layer_show', 'fpnP%s' % (8 - i) + '_V2' + '.jpg'), level[:, :, 0])
-        # classification = torch.cat([self.classificationModel(feature).view((int(feature.size()[0]), -1)) for feature in features], dim=1)
-        # x = self.fc(classification)
-        # x = self.last_bn(x)
-        #
-        x = torch.cat([self.avgpool_1a(feature).view((int(feature.size()[0]), -1)) for feature in features], dim=1)
-        x = self.dropout(x)
-        x = self.last_linear(x)
-        # x = self.last_bn(x)
+                version = input('输入版本号：V*')
+                version = version.upper()
+                layers = level.shape[2]
+                plt.imsave(os.path.join(pwd, 'Layer_show', version + '.jpg'), level[:, :, 0])
+                # for ij in range(layers):
+                #     plt.imsave(os.path.join(pwd, 'Layer_show', version+ '_layer%s.jpg'%ij), level[:, :, ij])
+        x = self.avgpool(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
         # x = torch.div(x, torch.norm(x))*50
         if self.training:
-            mask_loss = self.levelattentionLoss(img.shape, attention, annotations)
-            return x, mask_loss
+            return x, loss
         else:
             return x
-
-        # ##########################
-        # x = self.avgpool(x)
-        # x = x.view(x.size(0), -1)
-        # x = self.fc(x)
-
-        return x
 
 def resnet18_cbam(pretrained=True, **kwargs):
     """Constructs a ResNet-18 model.

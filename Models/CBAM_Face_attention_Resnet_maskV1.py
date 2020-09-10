@@ -69,6 +69,7 @@ class SpatialAttention(nn.Module):
         max_out, _ = torch.max(x, dim=1, keepdim=True)
         x = torch.cat([avg_out, max_out], dim=1)
         x = self.conv1(x)
+        x = self.sigmoid(x)
         return self.sigmoid(x)
 
 class PyramidFeatures(nn.Module):

@@ -2,16 +2,20 @@ import torch
 import os
 import sys
 from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader, LFWestMask_dataloader
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 pwd = os.path.abspath('./')
 
-version = 'V3'
-if version=='V1' or version=='V6':
+version = 'V8'
+if version=='V1':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
+elif version=='V6':
+    from Models.Resnet34 import resnet34 as resnet34_cbam
 elif version=='V2':
     from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
+elif version=='V8':
+    from Models.Resnet34_attention import resnet34 as resnet34_cbam
 elif (version=='V3') or (version=='V9'):
     from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam

@@ -2,7 +2,7 @@
 import sys
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 sys.path.append(os.getcwd())
 # 导入包
@@ -14,44 +14,28 @@ import torch
 import time
 # 导入文件
 # from Models.Model_for_facenet import model, optimizer_model, start_epoch, flag_train_multi_gpu
-from Data_loader.Data_loader_facenet_mask import test_dataloader,V9_train_dataloader
-from Data_loader.Data_loader_facenet_mask import LFWestMask_dataloader
+from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader, LFWestMask_dataloader
 from Losses.Triplet_loss import TripletLoss
 from validate_on_LFW import evaluate_lfw
-from Data_loader.Data_loader_train_notmask import TrainDataset
 from config_mask import config
-from Models.CBAM_Face_attention_Resnet_maskV2 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
-    resnet152_cbam
-pwd = os.path.abspath('./')
+# from Models.Attention_resnet_lossinforward import Resnet34_Triplet,ResNet,resnet18
+from Models.Resnet34 import resnet34
+
 print("Using {} model architecture.".format(config['model']))
 start_epoch = 0
 
-if config['model'] == 18:
-    model = resnet18_cbam(pretrained=True, showlayer= False,num_classes=128)
-elif config['model'] == 34:
-    model = resnet34_cbam(pretrained=True, showlayer= False, num_classes=128)
-elif config['model'] == 50:
-    model = resnet50_cbam(pretrained=True, showlayer= False, num_classes=128)
-elif config['model'] == 101:
-    model = resnet101_cbam(pretrained=True, showlayer= False, num_classes=128)
-elif config['model'] == 152:
-    model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
+model = resnet34(pretrained=True)
 
-model_path = os.path.join(pwd, 'Model_training_checkpoints')
-x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V2' in i]
+model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
+x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V6' in i]
 x.sort()
 for i in os.listdir(model_path):
-    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V2' in i):
-        model_pathi = os.path.join(model_path, i)
+    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V6' in i):
+        model_path = os.path.join(model_path, i)
         break
 
-if os.path.exists(model_pathi) and ('V2' in model_pathi):
-    # model_state = torch.load(model_pathi)
-    # model.load_state_dict(model_state['model_state_dict'])
-    # start_epoch = model_state['epoch']
-    # print('loaded %s' % model_pathi)
-
-    model_state = torch.load(model_pathi)
+if os.path.exists(model_path) and ('V6' in model_path):
+    model_state = torch.load(model_path)
     # model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
 
@@ -61,7 +45,7 @@ if os.path.exists(model_pathi) and ('V2' in model_pathi):
     now_state_dict.update(state_dict)
     # now_state_dict.update(pretrained_state_dict)
     model.load_state_dict(now_state_dict)
-    print('loaded %s' % model_pathi)
+    print('loaded %s' % model_path)
 else:
     print('不存在预训练模型！')
 
@@ -76,21 +60,25 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
     model.cuda()
     print('Using single-gpu training.')
 
+# optimizer
+print("Using {} optimizer.".format(config['optimizer']))
+
 def adjust_learning_rate(optimizer, epoch):
-    if epoch<19:
+    if epoch<30:
         lr =  0.125
-    elif (epoch>=19) and (epoch<60):
+    elif (epoch>=30) and (epoch<60):
         lr = 0.0625
     elif (epoch >= 60) and (epoch < 90):
         lr = 0.0155
     elif (epoch >= 90) and (epoch < 120):
         lr = 0.003
-    elif (epoch>=120) and (epoch<160):
+    elif (epoch>=120) and (epoch < 160):
         lr = 0.0001
     else:
         lr = 0.00006
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+
 
 def create_optimizer(model, new_lr):
     # setup optimizer
@@ -146,11 +134,11 @@ for epoch in range(start_epoch, end_epoch):
 
     model.train()  # 训练模式
     # step小循环
-    progress_bar = enumerate(tqdm(V9_train_dataloader))
+    progress_bar = enumerate(tqdm(train_dataloader))
     for batch_idx, (batch_sample) in progress_bar:
         # for batch_idx, (batch_sample) in enumerate(train_dataloader):
         # length = len(train_dataloader)
-        # fl=open('/home/Mask-face-recognitionV1/output.txt', 'w')
+        # fl=open('/home/Mask-face-recognition/output.txt', 'w')
         # for batch_idx, (batch_sample) in enumerate(train_dataloader):
         # print(batch_idx, end=' ')
         # fl.write(str(batch_idx)+' '+str(round((time.time()-epoch_time_start)*length/((batch_idx+1)*60), 2))+'；  ')
@@ -160,18 +148,19 @@ for epoch in range(start_epoch, end_epoch):
         pos_img = batch_sample['pos_img'].cuda()
         neg_img = batch_sample['neg_img'].cuda()
         # 取出三张mask图(batch*图)
-        mask_anc = batch_sample['mask_anc'].cuda()
-        mask_pos = batch_sample['mask_pos'].cuda()
-        mask_neg = batch_sample['mask_neg'].cuda()
+        position_anc = batch_sample['mask_anc'].cuda()
+        position_pos = batch_sample['mask_pos'].cuda()
+        position_neg = batch_sample['mask_neg'].cuda()
 
         # 模型运算
         # 前向传播过程-拿模型分别跑三张图，生成embedding和loss（在训练阶段的输入是两张图，输出带loss，而验证阶段输入一张图，输出只有embedding）
-        anc_embedding, anc_attention_loss = model((anc_img, mask_anc))
-        pos_embedding, pos_attention_loss = model((pos_img, mask_pos))
-        neg_embedding, neg_attention_loss = model((neg_img, mask_neg))
+        anc_embedding = model(anc_img)
+        pos_embedding  = model(pos_img)
+        neg_embedding = model(neg_img)
         anc_embedding = torch.div(anc_embedding, torch.norm(anc_embedding)) * 50
         pos_embedding = torch.div(pos_embedding, torch.norm(pos_embedding)) * 50
         neg_embedding = torch.div(neg_embedding, torch.norm(neg_embedding)) * 50
+        # print(99999999, anc_embedding.size())
         # 寻找困难样本
         # 计算embedding的L2
         pos_dist = l2_distance.forward(anc_embedding, pos_embedding)
@@ -187,9 +176,6 @@ for epoch in range(start_epoch, end_epoch):
         pos_hard_embedding = pos_embedding[hard_triplets].cuda()
         neg_hard_embedding = neg_embedding[hard_triplets].cuda()
         # 选定困难样本——困难样本对应的attention loss
-        hard_anc_attention_loss = anc_attention_loss[hard_triplets]
-        hard_pos_attention_loss = pos_attention_loss[hard_triplets]
-        hard_neg_attention_loss = neg_attention_loss[hard_triplets]
 
         # 损失计算
         # 计算这个批次困难样本的三元损失
@@ -204,12 +190,8 @@ for epoch in range(start_epoch, end_epoch):
         #     negative=neg_embedding
         # ).cuda()
         # 计算这个批次困难样本的attention loss（这个loss实际上在forward过程里已经计算了，这里就是整合一下求个mean）
-        hard_attention_loss = torch.cat([hard_anc_attention_loss, hard_pos_attention_loss, hard_neg_attention_loss])
-        # hard_attention_loss = torch.cat([anc_attention_loss, pos_attention_loss, neg_attention_loss])
-        hard_attention_loss = torch.mean(hard_attention_loss).cuda()
-        hard_attention_loss = hard_attention_loss.type(torch.FloatTensor)
         # 计算总顺势
-        LOSS = triplet_loss + hard_attention_loss
+        LOSS = triplet_loss
         # LOSS = triplet_loss
 
         # 反向传播过程
@@ -225,12 +207,11 @@ for epoch in range(start_epoch, end_epoch):
         num_hard += len(anc_hard_embedding)
         # 计算这个epoch内的总三元损失和计算损失所用的困难样本个数
         triplet_loss_sum += triplet_loss.item()
-        attention_loss_sum += hard_attention_loss.item()
         # if batch_idx>10:
         #     break
     # if batch_idx==9:
-    #    tim = time.time() - epoch_time_start
-    #  print("需要的时间是：",round((tim*length)/600,2),"分钟")
+    # tim = time.time() - epoch_time_start
+    # print("需要的时间是：",round((tim*length)/600,2),"分钟")
     # fl.close()
 
     # 计算这个epoch里的平均损失
@@ -244,7 +225,6 @@ for epoch in range(start_epoch, end_epoch):
     model.eval()  # 验证模式
     with torch.no_grad():  # 不传梯度了
         distances, labels = [], []
-
         progress_bar = enumerate(tqdm(test_dataloader))
         for batch_index, (data_a, data_b, label) in progress_bar:
             # data_a, data_b, label这仨是一批的矩阵
@@ -267,7 +247,7 @@ for epoch in range(start_epoch, end_epoch):
             labels=labels,
             epoch = 'epoch_'+str(epoch),
             tag = 'NOTMaskedLFW_auc',
-            version = 'V2',
+            version = 'V6',
             pltshow=True
         )
     print("Validating on LFWMASKTestDataset! ...")
@@ -296,14 +276,14 @@ for epoch in range(start_epoch, end_epoch):
             labels=labels,
             epoch = 'epoch_'+str(epoch),
             tag = 'MaskedLFW_auc',
-            version = 'V2',
+            version = 'V6',
             pltshow=True
         )
 
     # 打印并保存日志
     # 从之前的文件里读出来最好的roc和acc，并进行更新
-    if os.path.exists('logs/lfw_{}_log_tripletnotmaskV2.txt'.format(config['model'])):
-        with open('logs/lfw_{}_log_tripletnotmaskV2.txt'.format(config['model']), 'r') as f:
+    if os.path.exists('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model'])):
+        with open('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model']), 'r') as f:
             lines = f.readlines()
             my_line = lines[-3]
             my_line = my_line.split('\t')
@@ -323,10 +303,10 @@ for epoch in range(start_epoch, end_epoch):
         save = True
     print('save: ', save)
 
-    # 打印日志内容
+    # 打印不戴口罩日志内容
     print('Epoch {}:\n \
-           train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
-           test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
+               train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
+               NOTMASK_LFW_test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
         epoch + 1,
         avg_loss,
         avg_triplet_loss,
@@ -344,8 +324,8 @@ for epoch in range(start_epoch, end_epoch):
     )
     # 打印戴口罩日志内容
     print('Epoch {}:\n \
-                   train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
-                   MASKED_LFW_test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
+               train_log:\tLOSS: {:.3f}\ttri_loss: {:.3f}\tatt_loss: {:.3f}\thard_sample: {}\ttrain_time: {}\n \
+               MASKED_LFW_test_log:\tAUC: {:.3f}\tACC: {:.3f}+-{:.3f}\trecall: {:.3f}+-{:.3f}\tPrecision {:.3f}+-{:.3f}\t'.format(
         epoch + 1,
         avg_loss,
         avg_triplet_loss,
@@ -363,7 +343,7 @@ for epoch in range(start_epoch, end_epoch):
     )
 
     # 保存日志文件
-    with open('logs/lfw_{}_log_tripletnotmaskV2.txt'.format(config['model']), 'a') as f:
+    with open('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model']), 'a') as f:
         val_list = [
             'epoch: ' + str(epoch + 1) + '\t',
             'train:\t',
@@ -383,8 +363,7 @@ for epoch in range(start_epoch, end_epoch):
             'acc_MD: ' + str('%.3f' % np.mean(accuracy_mask)) + '+-' + str('%.3f' % np.std(accuracy_mask)) + '\t',
             'best_acc_MD: ' + str('%.3f' % best_accuracy) + '\t',
             'recall_MD: ' + str('%.3f' % np.mean(recall_mask)) + '+-' + str('%.3f' % np.std(recall_mask)) + '\t',
-            'precision_MD: ' + str('%.3f' % np.mean(precision_mask)) + '+-' + str(
-                '%.3f' % np.std(precision_mask)) + '\t',
+            'precision_MD: ' + str('%.3f' % np.mean(precision_mask)) + '+-' + str('%.3f' % np.std(precision_mask)) + '\t',
             'best_distances_MD: ' + str('%.3f' % np.mean(best_distances_mask)) + '+-' + str(
                 '%.3f' % np.std(best_distances_mask)) + '\t',
             'tar_m: ' + str('%.3f' % np.mean(tar_mask)) + '\t',
@@ -435,10 +414,9 @@ for epoch in range(start_epoch, end_epoch):
         # if flag_validate_lfw:
         # state['best_distance_threshold'] = np.mean(best_distances)
         #
-        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNotMasked{:.3f}_rocMasked{:.3f}notmaskV2.pt'.format(config['model'],
+        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNotMasked{:.3f}_rocMasked{:.3f}maskV6.pt'.format(config['model'],
                                                                                                      epoch + 1,
                                                                                                      roc_auc, roc_auc_mask))
-
 # Training loop end
 total_time_end = time.time()
 total_time_elapsed = total_time_end - total_time_start

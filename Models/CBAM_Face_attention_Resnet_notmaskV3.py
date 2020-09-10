@@ -82,12 +82,13 @@ class FACEAttention(nn.Module):
     def forward(self, x):
         out = self.conv1(x)
         out = self.relu1(out)
-
         out = self.conv2(out)
         out = self.relu2(out)
 
         out = self.conv3(out)
-
+        # w = list(np.unique(out.detach().cpu().numpy()))
+        # w.sort()
+        # print('outoutout5: ', out.size(), w)
         out = self.sigmoid(out)
         return out
 
@@ -235,6 +236,9 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+        # W=list(np.unique(x.detach().cpu().numpy()))
+        # W.sort()
+        # print(111111, x.size(), W)
         xs = self.Fa(x)
         if self.training:
             loss = self.aloss(xs, mask)
@@ -250,7 +254,7 @@ class ResNet(nn.Module):
                 else:
                     level = np.array(255 * unnormalize(level).detach().numpy()).copy()
                 level = np.transpose(level, (1, 2, 0))
-                version = input('输入版本号：V3、V9')
+                version = input('输入版本号：V*')
                 version = version.upper()
                 layers = level.shape[2]
                 plt.imsave(os.path.join(pwd, 'Layer_show', version + '.jpg'), level[:, :, 0])

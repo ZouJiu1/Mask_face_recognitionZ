@@ -2,7 +2,7 @@
 import sys
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
 sys.path.append(os.getcwd())
 # 导入包
@@ -14,47 +14,38 @@ import torch
 import time
 # 导入文件
 # from Models.Model_for_facenet import model, optimizer_model, start_epoch, flag_train_multi_gpu
-from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader, LFWestMask_dataloader
+from Data_loader.Data_loader_facenet_mask import test_dataloader,V9_train_dataloader
+from Data_loader.Data_loader_facenet_mask import   LFWestMask_dataloader
 from Losses.Triplet_loss import TripletLoss
 from validate_on_LFW import evaluate_lfw
 from config_mask import config
 # from Models.Attention_resnet_lossinforward import Resnet34_Triplet,ResNet,resnet18
-from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
-    resnet152_cbam
+from Models.Resnet34_attention import resnet34
 
 print("Using {} model architecture.".format(config['model']))
 start_epoch = 0
 
-if config['model'] == 18:
-    model = resnet18_cbam(pretrained=True, showlayer= False,num_classes=128)
-elif config['model'] == 34:
-    model = resnet34_cbam(pretrained=True, showlayer= False, num_classes=128)
-elif config['model'] == 50:
-    model = resnet50_cbam(pretrained=True, showlayer= False, num_classes=128)
-elif config['model'] == 101:
-    model = resnet101_cbam(pretrained=True, showlayer= False, num_classes=128)
-elif config['model'] == 152:
-    model = resnet152_cbam(pretrained=True, showlayer= False, num_classes=128)
-    # model  = resnet18(100)
+model = resnet34(pretrained=True)
 
 model_path = r'/media/Mask_face_recognitionZ/Model_training_checkpoints'
-x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V6' in i]
+x = [int(i.split('_')[4]) for i in os.listdir(model_path) if 'V8' in i]
 x.sort()
 for i in os.listdir(model_path):
-    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V6' in i):
+    if (len(x)!=0) and ('epoch_'+str(x[-1]) in i) and ('V8' in i):
         model_path = os.path.join(model_path, i)
         break
-if os.path.exists(model_path) and ('V6' in model_path):
+
+if os.path.exists(model_path) and ('V8' in model_path):
     model_state = torch.load(model_path)
-    # model.load_state_dict(model_state['model_state_dict'])
+    model.load_state_dict(model_state['model_state_dict'])
     start_epoch = model_state['epoch']
 
-    now_state_dict = model.state_dict()
-    state_dict = {k: v for k, v in model_state.items() if (k in now_state_dict.keys()) and \
-                  ('fc.weight' not in now_state_dict.keys())}
-    now_state_dict.update(state_dict)
-    # now_state_dict.update(pretrained_state_dict)
-    model.load_state_dict(now_state_dict)
+    # now_state_dict = model.state_dict()
+    # state_dict = {k: v for k, v in model_state.items() if (k in now_state_dict.keys()) and \
+    #               ('fc.weight' not in now_state_dict.keys())}
+    # now_state_dict.update(state_dict)
+    # # now_state_dict.update(pretrained_state_dict)
+    # model.load_state_dict(now_state_dict)
     print('loaded %s' % model_path)
 else:
     print('不存在预训练模型！')
@@ -74,9 +65,9 @@ elif flag_train_gpu and torch.cuda.device_count() == 1:
 print("Using {} optimizer.".format(config['optimizer']))
 
 def adjust_learning_rate(optimizer, epoch):
-    if epoch<14:
+    if epoch<30:
         lr =  0.125
-    elif (epoch>=14) and (epoch<60):
+    elif (epoch>=30) and (epoch<60):
         lr = 0.0625
     elif (epoch >= 60) and (epoch < 90):
         lr = 0.0155
@@ -144,7 +135,7 @@ for epoch in range(start_epoch, end_epoch):
 
     model.train()  # 训练模式
     # step小循环
-    progress_bar = enumerate(tqdm(train_dataloader))
+    progress_bar = enumerate(tqdm(V9_train_dataloader))
     for batch_idx, (batch_sample) in progress_bar:
         # for batch_idx, (batch_sample) in enumerate(train_dataloader):
         # length = len(train_dataloader)
@@ -158,19 +149,18 @@ for epoch in range(start_epoch, end_epoch):
         pos_img = batch_sample['pos_img'].cuda()
         neg_img = batch_sample['neg_img'].cuda()
         # 取出三张mask图(batch*图)
-        position_anc = batch_sample['mask_anc'].cuda()
-        position_pos = batch_sample['mask_pos'].cuda()
-        position_neg = batch_sample['mask_neg'].cuda()
+        mask_anc = batch_sample['mask_anc'].cuda()
+        mask_pos = batch_sample['mask_pos'].cuda()
+        mask_neg = batch_sample['mask_neg'].cuda()
 
         # 模型运算
         # 前向传播过程-拿模型分别跑三张图，生成embedding和loss（在训练阶段的输入是两张图，输出带loss，而验证阶段输入一张图，输出只有embedding）
-        anc_embedding, anc_attention_loss = model((anc_img, position_anc))
-        pos_embedding, pos_attention_loss = model((pos_img, position_pos))
-        neg_embedding, neg_attention_loss = model((neg_img, position_neg))
+        anc_embedding, anc_attention_loss = model((anc_img, mask_anc))
+        pos_embedding, pos_attention_loss = model((pos_img, mask_pos))
+        neg_embedding, neg_attention_loss = model((neg_img, mask_neg))
         anc_embedding = torch.div(anc_embedding, torch.norm(anc_embedding)) * 50
         pos_embedding = torch.div(pos_embedding, torch.norm(pos_embedding)) * 50
         neg_embedding = torch.div(neg_embedding, torch.norm(neg_embedding)) * 50
-        # print(99999999, anc_embedding.size())
         # 寻找困难样本
         # 计算embedding的L2
         pos_dist = l2_distance.forward(anc_embedding, pos_embedding)
@@ -224,7 +214,6 @@ for epoch in range(start_epoch, end_epoch):
         num_hard += len(anc_hard_embedding)
         # 计算这个epoch内的总三元损失和计算损失所用的困难样本个数
         triplet_loss_sum += triplet_loss.item()
-        attention_loss_sum += hard_attention_loss.item()
         # if batch_idx>10:
         #     break
     # if batch_idx==9:
@@ -265,7 +254,7 @@ for epoch in range(start_epoch, end_epoch):
             labels=labels,
             epoch = 'epoch_'+str(epoch),
             tag = 'NOTMaskedLFW_auc',
-            version = 'V6',
+            version = 'V8',
             pltshow=True
         )
     print("Validating on LFWMASKTestDataset! ...")
@@ -294,14 +283,14 @@ for epoch in range(start_epoch, end_epoch):
             labels=labels,
             epoch = 'epoch_'+str(epoch),
             tag = 'MaskedLFW_auc',
-            version = 'V6',
+            version = 'V8',
             pltshow=True
         )
 
     # 打印并保存日志
     # 从之前的文件里读出来最好的roc和acc，并进行更新
-    if os.path.exists('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model'])):
-        with open('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model']), 'r') as f:
+    if os.path.exists('logs/lfw_{}_log_tripletmaskV8.txt'.format(config['model'])):
+        with open('logs/lfw_{}_log_tripletmaskV8.txt'.format(config['model']), 'r') as f:
             lines = f.readlines()
             my_line = lines[-3]
             my_line = my_line.split('\t')
@@ -361,7 +350,7 @@ for epoch in range(start_epoch, end_epoch):
     )
 
     # 保存日志文件
-    with open('logs/lfw_{}_log_tripletmaskV6.txt'.format(config['model']), 'a') as f:
+    with open('logs/lfw_{}_log_tripletmaskV8.txt'.format(config['model']), 'a') as f:
         val_list = [
             'epoch: ' + str(epoch + 1) + '\t',
             'train:\t',
@@ -432,7 +421,7 @@ for epoch in range(start_epoch, end_epoch):
         # if flag_validate_lfw:
         # state['best_distance_threshold'] = np.mean(best_distances)
         #
-        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNotMasked{:.3f}_rocMasked{:.3f}maskV6.pt'.format(config['model'],
+        torch.save(state, 'Model_training_checkpoints/model_{}_triplet_epoch_{}_rocNotMasked{:.3f}_rocMasked{:.3f}maskV8.pt'.format(config['model'],
                                                                                                      epoch + 1,
                                                                                                      roc_auc, roc_auc_mask))
 # Training loop end
