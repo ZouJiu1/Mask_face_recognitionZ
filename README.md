@@ -132,7 +132,7 @@ V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp
 <i></i>
 
 ### V9网络不同人向量距离结果
-运行compare.py文件，设置version='V9'，就可以得到比较结果<br>
+运行compare.py文件，设置version='V9'，就可以得到比较结果，dis是特征向量的距离<br>
 V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; V9网络不戴口罩测试的结果<br>
 <img src="Layer_show/mask/dis0.237_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.267_faceshow_V9.jpg" width="39%" /><br>
 <i></i>
