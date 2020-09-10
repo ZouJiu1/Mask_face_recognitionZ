@@ -68,7 +68,7 @@ python Image_processing.py -s1 9 -s2 10 -sa 10
 
 ###### 生成结果展示
 生成戴口罩人脸和口罩以上人脸矩形框(xmin,0,xmax,ymax)txt文件<br>
-<img src="Datasets/vggface2_train_face_mask/n009271/0001_02.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_mask/n009271/0001_02.jpg" width="39%" />
+<img src="Datasets/vggface2_train_face_mask/n009271/0001_02.jpg" width="39%" /> <img src="Datasets/vggface2_train_mask_mask/n009271/1.jpg" width="39%" />
 <i></i>
 
 ##### 设置notmasked=True；masked=True，则会同时生成带口罩的和不戴口罩的，V9模型需要这样设置，因为V9模型需要戴口罩人脸和以及口罩区域以上人脸的mask图片
