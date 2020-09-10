@@ -14,8 +14,11 @@ from torch.nn.modules.distance import PairwiseDistance
 pwd = os.path.abspath(__file__+'../../')
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 pwd = os.path.abspath('./')
-version = 'V8'
+version = 'V9'
 mask = True  #是否给人脸戴口罩
+img1_path = os.path.join(pwd, 'Layer_show', 'George_W_Bush_0001.jpg')
+# img1_path = os.path.join(pwd, 'Layer_show', 'Michael_Douglas_0003.jpg')
+img2_path = os.path.join(pwd, 'Layer_show', 'George_W_Bush_0003.jpg')
 
 if version=='V1':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
@@ -88,9 +91,6 @@ test_data_transforms = transforms.Compose([
     )
 ])
 
-img1_path = os.path.join(pwd, 'Layer_show', 'George_W_Bush_0001.jpg')
-# img1_path = os.path.join(pwd, 'Layer_show', 'Michael_Douglas_0003.jpg')
-img2_path = os.path.join(pwd, 'Layer_show', 'George_W_Bush_0003.jpg')
 isame = 1
 threshold = 0.9
 detector = dlib.get_frontal_face_detector()
