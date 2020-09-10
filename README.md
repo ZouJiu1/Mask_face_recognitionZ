@@ -23,6 +23,7 @@ AUC的结果是运行validation_LFW.py文件得到的
 | V9 | Resnet34 | ✔ |  | ✔ |  | ✔ | mask图片 | 0.832 | 0.918 |
 
 ### 训练模型下载
+下载好的模型放到Model_training_checkpoints文件夹里面<br>
 V1对应网络模型：[https://share.weiyun.com/rwxg7wjK](https://share.weiyun.com/rwxg7wjK) <br>
 V3对应网络模型：[https://share.weiyun.com/dlB3la3P](https://share.weiyun.com/dlB3la3P) <br>
 V9对应网络模型：[https://share.weiyun.com/0dGsAUtO](https://share.weiyun.com/0dGsAUtO) <br>
@@ -131,6 +132,7 @@ V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp
 <i></i>
 
 ### V9网络不同人向量距离结果
+运行compare.py文件，设置version='V9'，就可以得到比较结果，V9网络的不戴口罩的最佳距离是：0.035，戴口罩的最佳距离是： 0.037<br>
 V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; V9网络不戴口罩测试的结果<br>
 <img src="Layer_show/mask/dis0.237_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.267_faceshow_V9.jpg" width="39%" /><br>
 

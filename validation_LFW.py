@@ -1,11 +1,16 @@
 import torch
 import os
+import numpy as np
+from config_mask import config
+import os
+from validate_on_LFW import evaluate_lfw
+from torch.nn.modules.distance import PairwiseDistance
 import sys
 from Data_loader.Data_loader_facenet_mask import train_dataloader, test_dataloader, LFWestMask_dataloader
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 pwd = os.path.abspath('./')
 
-version = 'V8'
+version = 'V9'
 if version=='V1':
     from Models.CBAM_Face_attention_Resnet_maskV1 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
@@ -20,13 +25,7 @@ elif (version=='V3') or (version=='V9'):
     from Models.CBAM_Face_attention_Resnet_notmaskV3 import resnet18_cbam, resnet50_cbam, resnet101_cbam, resnet34_cbam, \
         resnet152_cbam
 
-import numpy as np
-from config_mask import config
-import os
-from validate_on_LFW import evaluate_lfw
-from torch.nn.modules.distance import PairwiseDistance
 model_path = os.path.join(pwd, 'Model_training_checkpoints')
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 if config['model'] == 18:
     model = resnet18_cbam(pretrained=True, showlayer= False,num_classes=128)
@@ -48,8 +47,14 @@ for i in os.listdir(model_path):
         break
 if version=='V1':
     model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_30_rocNotMasked0.819_rocMasked0.764maskV1.pt')
+elif version=='V2':
+    model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_27_rocNotMasked0.919_rocMasked0.798notmaskV2.pt')
 elif version=='V3':
     model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_97_rocNotMasked0.951_rocMasked0.766notmaskV3.pt')
+elif version=='V6':
+    model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_63_rocNotMasked0.922_rocMasked0.834maskV6.pt')
+elif version=='V8':
+    model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_39_rocNotMasked0.926_rocMasked0.856maskV8.pt')
 elif version=='V9':
     model_pathi = os.path.join(model_path, 'model_34_triplet_epoch_19_rocNotMasked0.918_rocMasked0.831notmaskV9.pt')
 print(model_path)

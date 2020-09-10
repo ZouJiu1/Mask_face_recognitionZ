@@ -27,8 +27,8 @@ config['margin'] = 0.5
 config['embedding_dim'] = 128
 config['pretrained'] = False
 config['save_last_model'] = True
-config['num_train_triplets'] = 100000
-config['num_workers'] = 9
+config['num_train_triplets'] = 1000
+config['num_workers'] = 6
 
 
 config['train_data_path'] = 'Datasets/vggface2_train_face_mask'
