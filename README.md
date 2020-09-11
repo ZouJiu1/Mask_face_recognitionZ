@@ -1,7 +1,11 @@
 # 口罩人脸识别(Mask-face-recognition)
 ##### 原始github:https://github.com/HouchangX-AI/Mask-face-recognition
 ### 由来
-这个项目主要是实现人脸特征向量的提取，关注点是实现[CBAM](https://arxiv.org/abs/1807.06521) 模块以及[face_attention](https://arxiv.org/abs/1711.07246) 模块，让网络集中关注不戴口罩的人脸区域并提升识别率
+这个项目主要是实现人脸特征向量的提取，关注点是实现[CBAM](https://arxiv.org/abs/1807.06521) 模块以及[face_attention](https://arxiv.org/abs/1711.07246) 模块，让网络集中关注不戴口罩的人脸区域并提升识别率<br>
+### 环境
+CUDA Version: 10.2
+CUDNN Version：7.6.5
+Pytorch：1.6.0 
 ### 数据
 正常人脸训练数据：VGGFace2，链接：http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/ <br>
 正常人脸测试数据：LFW(Labeled Faces in the Wild)，链接：http://vis-www.cs.umass.edu/lfw/<br>
@@ -136,7 +140,7 @@ V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp
 V9网络戴口罩测试的结果 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; V9网络不戴口罩测试的结果<br>
 <img src="Layer_show/mask/dis0.237_faceshow_V9.jpg" width="39%" /> <img src="Layer_show/notmask/dis0.267_faceshow_V9.jpg" width="39%" /><br>
 <i></i>
-<img src="Model_training_checkpoints/dis0.069_faceshow_V9.jpg" width="39%" />
+<img src="Layer_show/mask/dis0.069_faceshow_V9.jpg" width="39%" />
 
 ### 使用LFW数据集验证测试集AUC结果
 测试结果包含AUC、Accuray和最佳距离指标等，测试集相同但输入网络有两种图片呢，一种是戴口罩的LFW人脸图片，一种是不戴口罩的LFW人脸图片<br>
