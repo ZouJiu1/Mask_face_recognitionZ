@@ -3,9 +3,9 @@
 ### 由来
 这个项目主要是实现人脸特征向量的提取，关注点是实现[CBAM](https://arxiv.org/abs/1807.06521) 模块以及[face_attention](https://arxiv.org/abs/1711.07246) 模块，让网络集中关注不戴口罩的人脸区域并提升识别率<br>
 ### 环境
-CUDA Version: 10.2
-CUDNN Version：7.6.5
-Pytorch：1.6.0 
+CUDA Version: 10.2<br>
+CUDNN Version：7.6.5<br>
+Pytorch：1.6.0<br>
 ### 数据
 正常人脸训练数据：VGGFace2，链接：http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/ <br>
 正常人脸测试数据：LFW(Labeled Faces in the Wild)，链接：http://vis-www.cs.umass.edu/lfw/<br>
