@@ -29,7 +29,10 @@ AUC的结果是运行validation_LFW.py文件得到的
 ### 训练模型下载
 下载好的模型放到Model_training_checkpoints文件夹里面<br>
 V1对应网络模型：[https://share.weiyun.com/rwxg7wjK](https://share.weiyun.com/rwxg7wjK) <br>
+V2对应网络模型：[https://share.weiyun.com/k2hbXlUf](https://share.weiyun.com/k2hbXlUf) <br>
 V3对应网络模型：[https://share.weiyun.com/dlB3la3P](https://share.weiyun.com/dlB3la3P) <br>
+V6对应网络模型：[https://share.weiyun.com/oahbBY9q](https://share.weiyun.com/oahbBY9q) <br>
+V8对应网络模型：[https://share.weiyun.com/7mHXOuxS](https://share.weiyun.com/7mHXOuxS) <br>
 V9对应网络模型：[https://share.weiyun.com/0dGsAUtO](https://share.weiyun.com/0dGsAUtO) <br>
 
 ### 下载相应数据
