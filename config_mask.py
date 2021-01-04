@@ -27,7 +27,7 @@ config['margin'] = 0.5
 config['embedding_dim'] = 128
 config['pretrained'] = False
 config['save_last_model'] = True
-config['num_train_triplets'] = 1000
+config['num_train_triplets'] = 1000   #git clone代码里面的图片数量少所以三元组数量少，下载全部图片数据以后，需要设置为100000
 config['num_workers'] = 6
 
 
