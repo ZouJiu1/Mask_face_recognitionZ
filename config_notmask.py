@@ -18,7 +18,7 @@ config['predicter_path'] = 'Data_preprocessing/shape_predictor_68_face_landmarks
 
 config['Learning_rate'] = 0.00001
 config['image_size'] = 256        # inceptionresnetv2————299
-config['epochs'] = 1900          #验证集的AUC达到最大时就可以停止训练了不要过拟合
+config['epochs'] = 190          #验证集的AUC达到最大时就可以停止训练了不要过拟合
 
 config['train_batch_size'] = 30#136
 config['test_batch_size'] = 30
