@@ -9,7 +9,7 @@ Pytorch：1.6.0<br>
 ### 数据
 正常人脸训练数据：VGGFace2，链接：http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/ <br>
 正常人脸测试数据：LFW(Labeled Faces in the Wild)，链接：http://vis-www.cs.umass.edu/lfw/<br>
-LFW数据集下载的链接是[https://share.weiyun.com/qHg5TcPP](https://share.weiyun.com/qHg5TcPP) ，放入Datasets文件夹<br> 
+LFW数据集下载的链接是[https://www.aliyundrive.com/s/4XxeetyrrRK](https://www.aliyundrive.com/s/4XxeetyrrRK) ，放入Datasets文件夹<br> 
 口罩人脸数据：Real-World-Masked-Face-Dataset，链接：https://github.com/X-zhangyang/Real-World-Masked-Face-Dataset，项目中暂时没用到可以不管<br>   
 ### 模型
 以标准人脸识别模型[FaceNet](https://arxiv.org/abs/1503.03832) 为主线，添加fpn_face_attention结构，增加CBAM模块，使其能更好的聚焦于人脸上半部，没带口罩的区域<br>
@@ -28,12 +28,12 @@ AUC的结果是运行validation_LFW.py文件得到的
 
 ### 训练模型下载
 下载好的模型放到Model_training_checkpoints文件夹里面<br>
-V1对应网络模型：[https://share.weiyun.com/rwxg7wjK](https://share.weiyun.com/rwxg7wjK) <br>
-V2对应网络模型：[https://share.weiyun.com/k2hbXlUf](https://share.weiyun.com/k2hbXlUf) <br>
-V3对应网络模型：[https://share.weiyun.com/dlB3la3P](https://share.weiyun.com/dlB3la3P) <br>
-V6对应网络模型：[https://share.weiyun.com/oahbBY9q](https://share.weiyun.com/oahbBY9q) <br>
-V8对应网络模型：[https://share.weiyun.com/7mHXOuxS](https://share.weiyun.com/7mHXOuxS) <br>
-V9对应网络模型：[https://share.weiyun.com/0dGsAUtO](https://share.weiyun.com/0dGsAUtO) <br>
+V1对应网络模型：[https://www.aliyundrive.com/s/c1hQjBftt6t](https://www.aliyundrive.com/s/c1hQjBftt6t) <br>
+V2对应网络模型：[https://www.aliyundrive.com/s/GtD9QYWkGa1](https://www.aliyundrive.com/s/GtD9QYWkGa1) <br>
+V3对应网络模型：[https://www.aliyundrive.com/s/JzfreoKqkKc](https://www.aliyundrive.com/s/JzfreoKqkKc) <br>
+V6对应网络模型：[https://www.aliyundrive.com/s/KnyJqEp16tn](https://www.aliyundrive.com/s/KnyJqEp16tn) <br>
+V8对应网络模型：[https://www.aliyundrive.com/s/XM6Ud5CCW9G](https://www.aliyundrive.com/s/XM6Ud5CCW9G) <br>
+V9对应网络模型：[https://www.aliyundrive.com/s/WkFA9yqFMMF](https://www.aliyundrive.com/s/WkFA9yqFMMF) <br>
 
 ### 下载相应数据
 生成一个Datasets文件夹，把VGGFace2的原始数据(VGGFace2_train文件)、LFW原始数据(lfw_funneled)、LFW配对文件(LFW_pairs.txt)，都放到Datasets文件夹，并解压，VGGface是用做训练集的，LFW是用做测试集的<br>
